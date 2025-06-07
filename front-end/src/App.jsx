@@ -18,6 +18,12 @@ function App() {
             <Button variant="outline" asChild>
               <Link to="/register">Registrarse</Link>
             </Button>
+            <Button variant="outline" asChild>
+              <Link to="/home">Landing</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/Products">Products</Link>
+            </Button>
           </div>
         </div>
       </div>
