@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { Link } from "react-router-dom"
 import { User, Mail, Lock, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,108 +12,117 @@ import FarmerProfileFields from "../molecules/FarmerProfileFields"
 import ProductInterestSelector from "../molecules/ProductInterestSelector"
 
 export default function RegisterForm() {
+  // TO DO: Update fields based on contract
   const [tipoUsuario, setTipoUsuario] = useState("")
-  const [formData, setFormData] = useState({
-    nombre: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    telefono: "",
-    departamento: "",
-    municipio: "",
-    descripcionPracticas: "",
-    productosInteres: [],
-  })
+  const { 
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm()
 
-  const handleProductoInteresChange = (producto, checked) => {
-    setFormData((prev) => ({
-      ...prev,
-      productosInteres: checked
-        ? [...prev.productosInteres, producto]
-        : prev.productosInteres.filter((p) => p !== producto),
-    }))
+  const onSubmit = data => {
+    // TO DO: Send registration data to backend
+    console.log("Form submitted:", data)
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // TODO: Implement registration logic
-    console.log("Form submitted:", { tipoUsuario, ...formData })
-  }
+  const handleProductosInteresChange = (producto, checked) => {
+    const current = watch("productosInteres") || [];
+    const updated = checked
+      ? [...current, producto]
+      : current.filter((p) => p !== producto);
+    setValue("productosInteres", updated);
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       <RoleSelector value={tipoUsuario} onChange={setTipoUsuario} />
 
       <div className="grid md:grid-cols-2 gap-4">
         <AuthInput
+          {...register("nombre", {
+            required: "Este campo es obligatorio",
+          })}
           id="nombre"
           label="Nombre Completo"
           placeholder="Tu nombre completo"
           icon={User}
-          value={formData.nombre}
-          onChange={(e) => setFormData((prev) => ({ ...prev, nombre: e.target.value }))}
+          error={errors.nombre?.message}
         />
         <AuthInput
+          {...register("telefono")}
           id="telefono"
           label="Teléfono"
           placeholder="3001234567"
           icon={Phone}
-          value={formData.telefono}
-          onChange={(e) => setFormData((prev) => ({ ...prev, telefono: e.target.value }))}
         />
       </div>
 
       <AuthInput
+        {...register("email", {
+          required: "Este campo es obligatorio",
+          pattern: {
+            value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            message: "El correo electrónico no es válido",
+          },
+        })}
         id="email"
-        type="email"
         label="Correo Electrónico"
         placeholder="tu@email.com"
         icon={Mail}
-        value={formData.email}
-        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+        error={errors.email?.message}
       />
 
       <div className="grid md:grid-cols-2 gap-4">
         <AuthInput
+          {...register("password", {
+            required: "Este campo es obligatorio",
+            minLength: {
+              value: 8,
+              message: "La contraseña debe tener al menos 8 caracteres",
+            },
+          })}
           id="password"
           type="password"
           label="Contraseña"
           placeholder="Mínimo 8 caracteres"
           icon={Lock}
-          value={formData.password}
-          onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+          error={errors.password?.message}
         />
         <AuthInput
+          {...register("confirmPassword", {
+            required: "Este campo es obligatorio",
+            validate: (value) => 
+              value === watch("password") || "Las contraseñas no coinciden",
+          })}
           id="confirmPassword"
           type="password"
           label="Confirmar Contraseña"
           placeholder="Repite tu contraseña"
           icon={Lock}
-          value={formData.confirmPassword}
-          onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+          error={errors.confirmPassword?.message}
         />
       </div>
 
       <LocationFields
-        departamento={formData.departamento}
-        municipio={formData.municipio}
-        onDepartamentoChange={(value) => setFormData((prev) => ({ ...prev, departamento: value }))}
-        onMunicipioChange={(value) => setFormData((prev) => ({ ...prev, municipio: value }))}
+        departamento={watch("departamento") || ""}
+        municipio={watch("municipio") || ""}
+        onDepartamentoChange={(value) => setValue("departamento", value)}
+        onMunicipioChange={(value) => setValue("municipio", value)}
       />
 
       {tipoUsuario === "agricultor" && (
         <FarmerProfileFields
-          descripcionPracticas={formData.descripcionPracticas}
-          onDescripcionChange={(value) => 
-            setFormData((prev) => ({ ...prev, descripcionPracticas: value }))
-          }
+          descripcionPracticas={watch("descripcionPracticas") || ""}
+          onDescripcionChange={(value) => setValue("descripcionPracticas", value)}
         />
       )}
 
       {tipoUsuario === "comprador" && (
         <ProductInterestSelector
-          selectedProducts={formData.productosInteres}
-          onProductChange={handleProductoInteresChange}
+          selectedProducts={watch("productosInteres") || []}
+          onProductChange={handleProductosInteresChange}
         />
       )}
 
