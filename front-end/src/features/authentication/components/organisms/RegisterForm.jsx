@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Link } from "react-router-dom"
 import { User, Mail, Lock, Phone } from "lucide-react"
@@ -13,7 +13,6 @@ import ProductInterestSelector from "../molecules/ProductInterestSelector"
 
 export default function RegisterForm() {
   // TO DO: Update fields based on contract
-  const [tipoUsuario, setTipoUsuario] = useState("")
   const { 
     register,
     handleSubmit,
@@ -21,6 +20,13 @@ export default function RegisterForm() {
     setValue,
     formState: { errors },
   } = useForm()
+
+  const role = watch("tipoUsuario") || ""
+
+  /** Register field manually since RoleSelector is a custom component */
+  useEffect(() => {
+    register("tipoUsuario", { required: "Selecciona un rol" })
+  }, [register])
 
   const onSubmit = data => {
     // TO DO: Send registration data to backend
@@ -31,13 +37,17 @@ export default function RegisterForm() {
     const current = watch("productosInteres") || [];
     const updated = checked
       ? [...current, producto]
-      : current.filter((p) => p !== producto);
-    setValue("productosInteres", updated);
-  };
+      : current.filter((p) => p !== producto)
+    setValue("productosInteres", updated)
+  }
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-      <RoleSelector value={tipoUsuario} onChange={setTipoUsuario} />
+      <RoleSelector
+        value={role}
+        onChange={value => setValue("tipoUsuario", value, { shouldValidate: true })}
+        error={errors.tipoUsuario?.message}
+      />
 
       <div className="grid md:grid-cols-2 gap-4">
         <AuthInput
@@ -112,33 +122,19 @@ export default function RegisterForm() {
         onMunicipioChange={(value) => setValue("municipio", value)}
       />
 
-      {tipoUsuario === "agricultor" && (
+      {role === "agricultor" && (
         <FarmerProfileFields
           descripcionPracticas={watch("descripcionPracticas") || ""}
           onDescripcionChange={(value) => setValue("descripcionPracticas", value)}
         />
       )}
 
-      {tipoUsuario === "comprador" && (
+      {role === "comprador" && (
         <ProductInterestSelector
           selectedProducts={watch("productosInteres") || []}
           onProductChange={handleProductosInteresChange}
         />
       )}
-
-      <div className="flex items-center space-x-2">
-        <Checkbox id="terminos" />
-        <Label htmlFor="terminos" className="text-sm">
-          Acepto los{" "}
-          <Link to="/terminos" className="text-green-600 hover:underline">
-            términos y condiciones
-          </Link>{" "}
-          y la{" "}
-          <Link to="/privacidad" className="text-green-600 hover:underline">
-            política de privacidad
-          </Link>
-        </Label>
-      </div>
 
       <div className="space-y-4">
         <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" size="lg">
