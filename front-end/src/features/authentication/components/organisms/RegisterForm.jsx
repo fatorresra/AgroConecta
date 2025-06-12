@@ -1,4 +1,4 @@
-import axios from "axios"
+import { registerUser } from "../../services/AuthService"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom"
@@ -11,8 +11,6 @@ import RoleSelector from "../molecules/RoleSelector"
 import LocationFields from "../molecules/LocationFields"
 import FarmerProfileFields from "../molecules/FarmerProfileFields"
 import ProductInterestSelector from "../molecules/ProductInterestSelector"
-
-const BASE_URL = ""
 
 export default function RegisterForm() {
   const navigate = useNavigate()
@@ -38,7 +36,7 @@ export default function RegisterForm() {
     
     // TO DO: Success message and better error message handling
     try {
-      const response = await axios.post(`${BASE_URL}/auth/register`, formData)
+      const response = await registerUser(formData)
       navigate("/login")
       console.log(response)
     } catch (error) {
