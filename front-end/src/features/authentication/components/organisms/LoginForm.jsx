@@ -6,6 +6,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import AuthInput from "../atoms/AuthInput"
 import SocialLoginButtons from "../molecules/SocialLoginButtons"
+import { loginUser } from "../../services/AuthService"
+import { useAuthStore } from "../../store/AuthStore" // <-- Importa tu store
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -15,10 +17,19 @@ export default function LoginForm() {
     rememberMe: false,
   })
 
-  const handleSubmit = (e) => {
+  const login = useAuthStore((state) => state.login) // <-- Obtén la función login del store
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // TODO: Implement login logic
-    console.log("Form submitted:", formData)
+    const result = await loginUser(formData)
+    if (result.success) {
+      // Guarda el token y el usuario en Zustand
+      login(result.user.token, result.user)
+      alert("¡Login exitoso!")
+      // Aquí puedes redirigir o guardar el usuario
+    } else {
+      alert(result.message)
+    }
   }
 
   const passwordToggleIcon = showPassword ? (

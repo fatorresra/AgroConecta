@@ -1,5 +1,7 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { registerUser } from "../../services/AuthService"
+import { useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { Link, useNavigate } from "react-router-dom"
 import { User, Mail, Lock, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -11,128 +13,153 @@ import FarmerProfileFields from "../molecules/FarmerProfileFields"
 import ProductInterestSelector from "../molecules/ProductInterestSelector"
 
 export default function RegisterForm() {
-  const [tipoUsuario, setTipoUsuario] = useState("")
-  const [formData, setFormData] = useState({
-    nombre: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    telefono: "",
-    departamento: "",
-    municipio: "",
-    descripcionPracticas: "",
-    productosInteres: [],
-  })
+  const navigate = useNavigate()
+  const { 
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm()
 
-  const handleProductoInteresChange = (producto, checked) => {
-    setFormData((prev) => ({
-      ...prev,
-      productosInteres: checked
-        ? [...prev.productosInteres, producto]
-        : prev.productosInteres.filter((p) => p !== producto),
-    }))
+  const role = watch("role") || ""
+
+  /** Register field manually since RoleSelector is a custom component */
+  useEffect(() => {
+    register("role", { required: "Selecciona un rol" })
+  }, [register])
+
+  const onSubmit = async (data) => {
+    // Remove confirmPassword from data
+    const { confirmPassword: _confirmPassword, ...formData } = data
+    
+    // TO DO: Success message and better error message handling
+    try {
+      const response = await registerUser(formData)
+      navigate("/login")
+      console.log(response)
+    } catch (error) {
+      setError("api", {
+        type: "manual",
+        message: error.response?.data?.message || "Error al crear la cuenta",
+      })
+    }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // TODO: Implement registration logic
-    console.log("Form submitted:", { tipoUsuario, ...formData })
+  const updatePreferredProducts = (producto, checked) => {
+    const current = watch("preferred_products") || [];
+    const updated = checked
+      ? [...current, producto]
+      : current.filter((p) => p !== producto)
+    setValue("preferred_products", updated)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <RoleSelector value={tipoUsuario} onChange={setTipoUsuario} />
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <AuthInput
-          id="nombre"
-          label="Nombre Completo"
-          placeholder="Tu nombre completo"
-          icon={User}
-          value={formData.nombre}
-          onChange={(e) => setFormData((prev) => ({ ...prev, nombre: e.target.value }))}
-        />
-        <AuthInput
-          id="telefono"
-          label="Teléfono"
-          placeholder="3001234567"
-          icon={Phone}
-          value={formData.telefono}
-          onChange={(e) => setFormData((prev) => ({ ...prev, telefono: e.target.value }))}
-        />
-      </div>
-
-      <AuthInput
-        id="email"
-        type="email"
-        label="Correo Electrónico"
-        placeholder="tu@email.com"
-        icon={Mail}
-        value={formData.email}
-        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+    <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <RoleSelector
+        value={role}
+        onChange={value => setValue("role", value, { shouldValidate: true })}
+        error={errors.role?.message}
       />
 
       <div className="grid md:grid-cols-2 gap-4">
         <AuthInput
+          {...register("name", {
+            required: "Este campo es obligatorio",
+          })}
+          id="nombre"
+          label="Nombre Completo"
+          placeholder="Tu nombre completo"
+          icon={User}
+          error={errors.name?.message}
+        />
+        <AuthInput
+          {...register("phone")}
+          id="telefono"
+          label="Teléfono"
+          placeholder="3001234567"
+          icon={Phone}
+        />
+      </div>
+
+      <AuthInput
+        {...register("email", {
+          required: "Este campo es obligatorio",
+          pattern: {
+            value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            message: "El correo electrónico no es válido",
+          },
+        })}
+        id="email"
+        label="Correo Electrónico"
+        placeholder="tu@email.com"
+        icon={Mail}
+        error={errors.email?.message}
+      />
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <AuthInput
+          {...register("password", {
+            required: "Este campo es obligatorio",
+            minLength: {
+              value: 8,
+              message: "La contraseña debe tener al menos 8 caracteres",
+            },
+          })}
           id="password"
           type="password"
           label="Contraseña"
           placeholder="Mínimo 8 caracteres"
           icon={Lock}
-          value={formData.password}
-          onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+          error={errors.password?.message}
         />
         <AuthInput
-          id="confirmPassword"
+          {...register("password_confirm", {
+            required: "Este campo es obligatorio",
+            validate: (value) => 
+              value === watch("password") || "Las contraseñas no coinciden",
+          })}
+          id="password_confirm"
           type="password"
           label="Confirmar Contraseña"
           placeholder="Repite tu contraseña"
           icon={Lock}
-          value={formData.confirmPassword}
-          onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+          error={errors.password_confirm?.message}
         />
       </div>
 
       <LocationFields
-        departamento={formData.departamento}
-        municipio={formData.municipio}
-        onDepartamentoChange={(value) => setFormData((prev) => ({ ...prev, departamento: value }))}
-        onMunicipioChange={(value) => setFormData((prev) => ({ ...prev, municipio: value }))}
+        departamento={watch("department") || ""}
+        municipio={watch("municipality") || ""}
+        onDepartamentoChange={(value) => setValue("department", value)}
+        onMunicipioChange={(value) => setValue("municipality", value)}
       />
 
-      {tipoUsuario === "agricultor" && (
+      {role === "agricultor" && (
         <FarmerProfileFields
-          descripcionPracticas={formData.descripcionPracticas}
-          onDescripcionChange={(value) => 
-            setFormData((prev) => ({ ...prev, descripcionPracticas: value }))
-          }
+          descripcionPracticas={watch("description") || ""}
+          onDescripcionChange={(value) => setValue("description", value)}
         />
       )}
 
-      {tipoUsuario === "comprador" && (
+      {role === "comprador" && (
         <ProductInterestSelector
-          selectedProducts={formData.productosInteres}
-          onProductChange={handleProductoInteresChange}
+          selectedProducts={watch("preferred_products") || []}
+          onProductChange={updatePreferredProducts}
         />
       )}
 
-      <div className="flex items-center space-x-2">
-        <Checkbox id="terminos" />
-        <Label htmlFor="terminos" className="text-sm">
-          Acepto los{" "}
-          <Link to="/terminos" className="text-green-600 hover:underline">
-            términos y condiciones
-          </Link>{" "}
-          y la{" "}
-          <Link to="/privacidad" className="text-green-600 hover:underline">
-            política de privacidad
-          </Link>
-        </Label>
-      </div>
+      {errors.api && (
+        <p className="mt-2 text-sm text-red-500">
+          {errors.api.message}
+        </p>
+      )}
 
       <div className="space-y-4">
-        <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" size="lg">
-          Crear Cuenta
+        <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" size="lg"
+          disabled={isSubmitting}>
+          {isSubmitting ? "Cargando..." : "Crear Cuenta"}
         </Button>
 
         <div className="text-center">
