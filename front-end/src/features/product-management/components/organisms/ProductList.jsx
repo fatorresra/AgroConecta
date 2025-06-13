@@ -10,11 +10,13 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
         <Card key={producto.id}>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-              <img
+               {/* product iamge can be nabled lated */}
+               
+              {/* <img
                 src={producto.imagen || "/placeholder.svg"}
                 alt={producto.nombre}
                 className="w-20 h-20 rounded-lg object-cover"
-              />
+              /> */}
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-semibold">{producto.nombre}</h3>

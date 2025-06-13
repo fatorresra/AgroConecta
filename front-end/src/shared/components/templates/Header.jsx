@@ -14,7 +14,7 @@ export default function Header({
   notificationCount = 0
 }) {
   const renderAuthSection = () => {
-    if (showAuthButtons && !isAuthenticated) {
+    if (showAuthButtons && !isAuthenticated) {  
       return (
         <>
           <Button variant="outline" asChild>
@@ -28,14 +28,16 @@ export default function Header({
     } else if (isAuthenticated) {
       return (
         <div className="flex items-center space-x-4">
-          {userType === "farmer" && (
+
+          {/* messages icon maybe could be enabled later */}
+          {/* {userType === "farmer" && (
             <Button variant="outline" size="sm" asChild>
               <Link to="/mensajes">
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Mensajes ({notificationCount})
               </Link>
             </Button>
-          )}
+          )} */}
           <Avatar>
             <AvatarImage src="/placeholder.svg?height=40&width=40" />
             <AvatarFallback>

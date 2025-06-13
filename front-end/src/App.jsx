@@ -24,6 +24,9 @@ function App() {
             <Button variant="outline" asChild>
               <Link to="/Products">Products</Link>
             </Button>
+            <Button variant="outline" asChild>
+              <Link to="/farmer/products">mis productos</Link>
+            </Button>
           </div>
         </div>
       </div>
