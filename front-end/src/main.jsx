@@ -5,9 +5,10 @@ import { ThemeProvider } from './shared/context/theme-provider'
 import App from './App.jsx'
 import LoginPage from './features/authentication/pages/LoginPage.jsx'
 import RegisterPage from './features/authentication/pages/RegisterPage.jsx'
-import LandingPage from './features/productManagement/pages/LandingPage.jsx'
+import LandingPage from './features/home/pages/LandingPage.jsx'
 import '@/styles/globals.css'
-import SearchProductsPage from './features/productManagement/pages/SearchProducts.jsx'
+import SearchProductsPage from './features/product-discovery/pages/SearchProducts.jsx'
+// import ProductDetailPage from './features/product-discovery/pages/ProductDetailPage.jsx'
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
     path: '/Products',
     element: <SearchProductsPage />,
   },
+  // {
+  //   path: '/Products/:id',
+  //   element: <ProductDetailPage />,
+  // },
   {
     path: '/login',
     element: <LoginPage />,
