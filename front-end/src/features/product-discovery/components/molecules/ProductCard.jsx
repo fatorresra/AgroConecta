@@ -15,6 +15,9 @@ export default function ProductCard({ product }) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative">
+
+        {/*space to add product images */}
+
         {/* <Image
           src={product.image || "/placeholder.svg"}
           alt={product.name || product.nombre}
