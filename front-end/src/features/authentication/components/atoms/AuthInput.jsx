@@ -8,6 +8,7 @@ export default function AuthInput({
   icon: Icon,
   rightIcon: RightIcon,
   className = "",
+  error,
   ...props
 }) {
   return (
@@ -18,7 +19,12 @@ export default function AuthInput({
         <Input
           id={id}
           type={type}
-          className={`${Icon ? "pl-10" : ""} ${RightIcon ? "pr-10" : ""} ${className}`}
+          className={`
+            ${Icon ? "pl-10" : ""}
+            ${RightIcon ? "pr-10" : ""}
+            ${error ? "focus-visible:!ring-red-500" : ""}
+            ${className}
+          `}
           {...props}
         />
         {RightIcon && (
@@ -27,6 +33,9 @@ export default function AuthInput({
           </div>
         )}
       </div>
+      {error && (
+        <p className="mt-1 text-sm text-red-500">{error}</p>
+      )}
     </div>
   )
 }
