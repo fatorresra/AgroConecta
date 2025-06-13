@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import FarmerHeader from "../components/templates/FarmerHeader"
+import Header from "@/shared/components/templates/Header"
 import ProductList from "../components/organisms/ProductList"
 import NewProductModal from "../components/organisms/NewProductModal"
 import EditProductModal from "../components/organisms/EditProductModal"
@@ -43,17 +43,12 @@ const productosRecientes = [
   },
 ]
 
-export default function DashboardAgricultor() {
+export default function FarmerProductsPage() {
   const [activeTab, setActiveTab] = useState("productos")
   const [modalNuevoProducto, setModalNuevoProducto] = useState(false)
   const [modalEditarProducto, setModalEditarProducto] = useState(false)
   const [modalEliminarProducto, setModalEliminarProducto] = useState(false)
   const [productoSeleccionado, setProductoSeleccionado] = useState(null)
-
-  const handleViewProduct = (producto) => {
-    // TODO: Implementar vista de detalle del producto
-    console.log("Ver producto:", producto.id)
-  }
 
   const handleEditProduct = (producto) => {
     setProductoSeleccionado(producto)
@@ -65,27 +60,22 @@ export default function DashboardAgricultor() {
     setModalEliminarProducto(true)
   }
 
-  const handleSaveProduct = (productData) => {
-    // TODO: Implementar guardado de producto
-    console.log("Guardar producto:", productData)
-    setModalNuevoProducto(false)
-  }
-
-  const handleUpdateProduct = (productId) => {
-    // TODO: Implementar actualización de producto
-    console.log("Actualizar producto:", productId)
-    setModalEditarProducto(false)
-  }
-
-  const handleDeleteConfirm = (productId) => {
-    // TODO: Implementar eliminación de producto
-    console.log("Eliminar producto:", productId)
-    setModalEliminarProducto(false)
+  const handleViewProduct = (producto) => {
+    // TODO: Implementar vista detallada del producto
+    console.log("Ver producto:", producto.id)
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <FarmerHeader nombreAgricultor="Juan Díaz" />
+      <Header
+        isAuthenticated={true}
+        userName="Juan Díaz"
+        pageTitle="Panel de Agricultor"
+        pageDescription="Gestiona tus productos y conecta con compradores"
+        showAuthButtons={false}
+        userType="farmer"
+        notificationCount={3}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -113,11 +103,11 @@ export default function DashboardAgricultor() {
           </TabsContent>
 
           <TabsContent value="mensajes" className="space-y-6">
-            {/* Contenido de Mensajes eliminado */}
+            {/* Contenido de Mensajes */}
           </TabsContent>
 
           <TabsContent value="ventas" className="space-y-6">
-            {/* Contenido de Ventas eliminado */}
+            {/* Contenido de Ventas */}
           </TabsContent>
         </Tabs>
       </div>
@@ -125,21 +115,32 @@ export default function DashboardAgricultor() {
       <NewProductModal
         open={modalNuevoProducto}
         onOpenChange={setModalNuevoProducto}
-        onSave={handleSaveProduct}
+        onSave={() => {
+          // TODO: Implementar lógica para guardar nuevo producto
+          setModalNuevoProducto(false)
+        }}
       />
 
       <EditProductModal
         producto={productoSeleccionado}
         open={modalEditarProducto}
         onOpenChange={setModalEditarProducto}
-        onSave={handleUpdateProduct}
+        onSave={(id) => {
+          // TODO: Implementar lógica para guardar cambios
+          console.log("Guardar cambios del producto:", id)
+          setModalEditarProducto(false)
+        }}
       />
 
       <DeleteProductModal
         producto={productoSeleccionado}
         open={modalEliminarProducto}
         onOpenChange={setModalEliminarProducto}
-        onDelete={handleDeleteConfirm}
+        onDelete={(id) => {
+          // TODO: Implementar lógica para eliminar producto
+          console.log("Eliminar producto:", id)
+          setModalEliminarProducto(false)
+        }}
       />
     </div>
   )
