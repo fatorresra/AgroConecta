@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom"
-import { MapPin, Star, MessageSquare, Package, Calendar, Certificate } from "lucide-react"
+import { MapPin, Star, MessageSquare, Package, Calendar, Award } from "lucide-react"
 import Header from "@/shared/components/templates/Header"
 import Footer from "@/shared/components/templates/Footer"
 import { Button } from "@/components/ui/button"
@@ -90,7 +90,7 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Certificate className="h-5 w-5 text-gray-400" />
+                  <Award className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Certificación</p>
                     <p className="font-medium">{product.certificacion}</p>
