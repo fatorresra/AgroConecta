@@ -21,14 +21,18 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const result = await loginUser(formData)
-    if (result.success) {
-      // Guarda el token y el usuario en Zustand
-      login(result.user.token, result.user)
-      alert("¡Login exitoso!")
-      // Aquí puedes redirigir o guardar el usuario
-    } else {
-      alert(result.message)
+    try {
+      const result = await loginUser(formData)
+      if (result.success) {
+        // Actualiza el store con el token y los datos del usuario
+        login(result.user.token, result.user)
+        alert("¡Login exitoso!")
+        // Aquí puedes agregar la redirección
+      } else {
+        alert(result.message)
+      }
+    } catch (error) {
+      alert("Error al iniciar sesión")
     }
   }
 

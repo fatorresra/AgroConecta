@@ -1,33 +1,29 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-/**
- * User data consists of:
- * - "id"
- * - "email"
- * - "name"
- * - "role": "agricultor" | "productor"
- * - "created_at"
- */
-
 export const useAuthStore = create(
   persist(
     (set) => ({
-      token: localStorage.getItem('auth_token') || null,
-      user: JSON.parse(localStorage.getItem('user')) || null,
+      token: null,
+      user: null,
 
       login: (token, user) => {
-        localStorage.setItem('auth_token', token)
-        localStorage.setItem('user', JSON.stringify(user)) // Depends on how the API call is made
-        set({ user: JSON.parse(token).user })
-        set({ token })
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        set({ 
+          token: token,
+          user: user // No necesitamos parsear el token, ya tenemos el objeto user
+        });
       },
 
       logout: () => {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user')
-        set({ token: null, user: null })
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        set({ token: null, user: null });
       },
     }),
+    {
+      name: 'auth-storage' // Nombre para persistir en localStorage
+    }
   )
-)
+);
