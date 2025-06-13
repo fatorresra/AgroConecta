@@ -18,8 +18,9 @@ export const useAuthStore = create(
 
       login: (token, user) => {
         localStorage.setItem('auth_token', token)
-        localStorage.setItem('user', JSON.stringify(user))
-        set({ token, user })
+        localStorage.setItem('user', JSON.stringify(user)) // Depends on how the API call is made
+        set({ user: JSON.parse(token).user })
+        set({ token })
       },
 
       logout: () => {
