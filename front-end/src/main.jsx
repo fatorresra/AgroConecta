@@ -6,9 +6,10 @@ import App from './App.jsx'
 import LoginPage from './features/authentication/pages/LoginPage.jsx'
 import RegisterPage from './features/authentication/pages/RegisterPage.jsx'
 import LandingPage from './features/home/pages/LandingPage.jsx'
-import '@/styles/globals.css'
 import SearchProductsPage from './features/product-discovery/pages/SearchProducts.jsx'
-// import ProductDetailPage from './features/product-discovery/pages/ProductDetailPage.jsx'
+import ProductDetailPage from './features/product-discovery/pages/ProductDetailPage.jsx'
+import FarmerProductsPage from './features/product-management/pages/FarmerProducts.jsx'
+import '@/styles/globals.css'
 
 const router = createBrowserRouter([
   {
@@ -20,13 +21,13 @@ const router = createBrowserRouter([
     element: <App />,
   },
   {
-    path: '/Products',
+    path: '/products',
     element: <SearchProductsPage />,
   },
-  // {
-  //   path: '/Products/:id',
-  //   element: <ProductDetailPage />,
-  // },
+  {
+    path: '/products/:id',
+    element: <ProductDetailPage />,
+  },
   {
     path: '/login',
     element: <LoginPage />,
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/farmer/products',
+    element: <FarmerProductsPage />,
   }
 ])
 
