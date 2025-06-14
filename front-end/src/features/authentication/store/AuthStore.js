@@ -1,29 +1,45 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
+import { loginUser } from '../services/AuthService';
 export const useAuthStore = create(
   persist(
     (set) => ({
       token: null,
       user: null,
 
-      login: (token, user) => {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+      login: async (credentials) => {
+        const { email, password } = credentials;
+        
+        // if (!email || !password) {
+        //   throw new Error('Email y contraseña son requeridos');
+        // }
+
+        const response = await loginUser({ email, password });
+        
+        if (!response.success) {
+          throw new Error(response.message);
+        }
+
+        // const { user } = response;
+
         set({ 
-          token: token,
-          user: user // No necesitamos parsear el token, ya tenemos el objeto user
+          token: response.token,
+          user: response.user
         });
+
+        return true;
       },
 
       logout: () => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
         set({ token: null, user: null });
       },
     }),
     {
-      name: 'auth-storage' // Nombre para persistir en localStorage
+      name: 'auth-storage',
+      partialize: (state) => ({ 
+        token: state.token,
+        user: state.user 
+      })
     }
   )
 );
