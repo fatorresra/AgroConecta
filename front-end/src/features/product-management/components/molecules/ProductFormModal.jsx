@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload } from "lucide-react"
+import { useState } from "react"
+import ProductBasicInfo from "./ProductBasicInfo"
+import ProductPricing from "./ProductPricing"
+import ProductImage from "../atoms/ProductImage"
 
 export default function ProductFormModal({ 
   open, 
@@ -23,7 +24,33 @@ export default function ProductFormModal({
   description = isEdit 
     ? "Modifica la información de tu producto"
     : "Completa la información de tu producto para publicarlo en la plataforma"
-}) {
+}) {  const [formData, setFormData] = useState(producto || {})
+  const [errors, setErrors] = useState({})
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleSubmit = async () => {
+    // Aquí iría la validación
+    const validationErrors = {}
+    if (!formData.nombre) validationErrors.nombre = "El nombre es requerido"
+    if (!formData.categoria) validationErrors.categoria = "La categoría es requerida"
+    if (!formData.precio) validationErrors.precio = "El precio es requerido"
+    if (!formData.unidad) validationErrors.unidad = "La unidad es requerida"
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
+      return
+    }
+
+    await onSave(formData)
+    onOpenChange(false)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -33,59 +60,17 @@ export default function ProductFormModal({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nombre">Nombre del Producto</Label>
-              <Input 
-                id="nombre" 
-                placeholder="Ej: Café Orgánico Premium" 
-                defaultValue={producto?.nombre}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="categoria">Categoría</Label>
-              <Select defaultValue={producto?.categoria || ""}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="frutas">Frutas</SelectItem>
-                  <SelectItem value="verduras">Verduras</SelectItem>
-                  <SelectItem value="cafe">Café</SelectItem>
-                  <SelectItem value="cacao">Cacao</SelectItem>
-                  <SelectItem value="tuberculos">Tubérculos</SelectItem>
-                  <SelectItem value="granos">Granos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <ProductBasicInfo 
+            producto={producto} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="precio">Precio (COP)</Label>
-              <Input 
-                id="precio" 
-                type="number" 
-                placeholder="Ej: 25000" 
-                defaultValue={producto?.precio}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="unidad">Unidad de Medida</Label>
-              <Select defaultValue={producto?.unidad || ""}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona unidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="kg">Kilogramos</SelectItem>
-                  <SelectItem value="g">Gramos</SelectItem>
-                  <SelectItem value="lb">Libras</SelectItem>
-                  <SelectItem value="unidad">Unidad</SelectItem>
-                  <SelectItem value="docena">Docena</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <ProductPricing 
+            producto={producto} 
+            onChange={handleChange}
+            errors={errors}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="descripcion">Descripción</Label>
@@ -93,17 +78,23 @@ export default function ProductFormModal({
               id="descripcion" 
               placeholder="Describe tu producto, su calidad, proceso de cultivo, etc." 
               defaultValue={producto?.descripcion}
+              onChange={(e) => handleChange("descripcion", e.target.value)}
+              className={errors.descripcion ? "border-red-500" : ""}
             />
+            {errors.descripcion && (
+              <p className="text-xs text-red-500">{errors.descripcion}</p>
+            )}
           </div>
 
           {!isEdit && (
             <div className="space-y-2">
               <Label>Imágenes del Producto</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600">Arrastra imágenes aquí o haz clic para seleccionar</p>
-                <p className="text-xs text-gray-500 mt-1">Máximo 5 imágenes, formato JPG o PNG</p>
-              </div>
+              <ProductImage 
+                onChange={(e) => handleChange("imagenes", Array.from(e.target.files))}
+              />
+              {errors.imagenes && (
+                <p className="text-xs text-red-500">{errors.imagenes}</p>
+              )}
             </div>
           )}
         </div>
@@ -114,7 +105,7 @@ export default function ProductFormModal({
           </Button>
           <Button 
             className="bg-green-600 hover:bg-green-700" 
-            onClick={() => onSave(producto?.id)}
+            onClick={handleSubmit}
           >
             {isEdit ? "Guardar Cambios" : "Publicar Producto"}
           </Button>
