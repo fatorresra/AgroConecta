@@ -4,6 +4,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export default function ProductList({ productos, onEdit, onDelete, onView }) {
+  if (!productos.length) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No hay productos disponibles
+      </div>
+    )
+  }
+
   return (
     <div className="grid gap-6">
       {productos.map((producto) => (
@@ -21,24 +29,25 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-lg font-semibold">{producto.nombre}</h3>
                   <Badge variant={producto.estado === "Activo" ? "default" : "secondary"}>
-                    {producto.estado}
+                    {producto.tipo}
                   </Badge>
                 </div>
                 <div className="grid md:grid-cols-4 gap-4 text-sm text-gray-600">
                   <div className="flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1" />${producto.precio.toLocaleString()}
+                    <DollarSign className="h-4 w-4 mr-1" />
+                    ${producto.precio.toLocaleString()}
                   </div>
                   <div className="flex items-center">
                     <Package className="h-4 w-4 mr-1" />
                     {producto.cantidad}
                   </div>
                   <div className="flex items-center">
-                    <Eye className="h-4 w-4 mr-1" />
-                    {producto.visitas} visitas
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Cosecha: {producto.fechaCosecha}
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    {producto.fechaPublicacion}
+                    Publicado: {producto.fechaPublicacion}
                   </div>
                 </div>
               </div>
