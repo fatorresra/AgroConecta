@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const BASE_URL = "http://127.0.0.1:5001";
+import  { PORTS } from "../../../shared/utils/Ports";
+
+const BASE_URL = PORTS.AUTH.BASE_URL; 
 
 export async function registerUser(formData) {
   try {
