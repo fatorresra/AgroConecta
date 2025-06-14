@@ -4,37 +4,33 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { useForm } from "react-hook-form"
 import AuthInput from "../atoms/AuthInput"
 import SocialLoginButtons from "../molecules/SocialLoginButtons"
-import { loginUser } from "../../services/AuthService"
-import { useAuthStore } from "../../store/AuthStore" // <-- Importa tu store
+import { useAuth } from "../../hooks/useAuth"
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  })
+  const { login, error, isLoading, clearError } = useAuth()
 
-  const login = useAuthStore((state) => state.login) // <-- Obtén la función login del store
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      const result = await loginUser(formData)
-      if (result.success) {
-        // Actualiza el store con el token y los datos del usuario
-        login(result.user.token, result.user)
-        alert("¡Login exitoso!")
-        // Aquí puedes agregar la redirección
-      } else {
-        alert(result.message)
-      }
-    } catch (error) {
-      alert("Error al iniciar sesión")
+  const onSubmit = async (data) => {
+    const result = await login({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (!result.success) {
+      // El error ya está manejado en useAuth
+      return;
     }
   }
+
 
   const passwordToggleIcon = showPassword ? (
     <button
@@ -54,35 +50,47 @@ export default function LoginForm() {
     </button>
   )
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+  return (    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {error && (
+        <div className="p-3 rounded-md bg-red-50 text-red-500 text-sm">
+          {error}
+        </div>
+      )}
+      
       <AuthInput
+        {...register("email", {
+          required: "El correo electrónico es obligatorio",
+          pattern: {
+            value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            message: "El correo electrónico no es válido",
+          },
+        })}
         id="email"
         type="email"
         label="Correo Electrónico"
         placeholder="tu@email.com"
         icon={Mail}
-        value={formData.email}
-        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+        error={errors.email?.message}
       />
 
       <AuthInput
+        {...register("password", {
+          required: "La contraseña es obligatoria",
+        })}
         id="password"
         type={showPassword ? "text" : "password"}
         label="Contraseña"
         placeholder="Tu contraseña"
         icon={Lock}
         rightIcon={passwordToggleIcon}
-        value={formData.password}
-        onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+        error={errors.password?.message}
       />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="remember"
-            checked={formData.rememberMe}
-            onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, rememberMe: checked }))}
+            {...register("rememberMe")}
           />
           <Label htmlFor="remember" className="text-sm cursor-pointer">
             Recordarme
@@ -93,8 +101,13 @@ export default function LoginForm() {
         </Link>
       </div>
 
-      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" size="lg">
-        Iniciar Sesión
+      <Button 
+        type="submit" 
+        className="w-full bg-green-600 hover:bg-green-700" 
+        size="lg"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
       </Button>
 
       <SocialLoginButtons />
