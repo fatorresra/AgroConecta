@@ -20,13 +20,13 @@ export const useAuthStore = create(
           throw new Error(response.message);
         }
 
-        // const { user } = response;
+        const {res } = response;
 
         set({ 
-          token: response.token,
-          user: response.user
+          token:res.token, // Asegúrate de que el token esté en la respuesta
+          user: res.user
         });
-
+        console.log('Usuario autenticado:', res.user);
         return true;
       },
 

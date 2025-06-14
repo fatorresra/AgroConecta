@@ -16,7 +16,8 @@ export const useAuth = () => {
        
       if (success) {
         // Determinar la ruta según el rol del usuario
-        const route = user?.role === 'agricultor' ? '/farmer/products' : '/dashboard';
+        // console.log(user.role);
+        const route = user.role === 'agricultor' ? '/farmer/products' : '/home';
         navigate(route);
         return { success: true };
       }

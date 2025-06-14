@@ -24,7 +24,7 @@ export async function loginUser({ email, password }) {
     // }
     return { 
       success: true, 
-      user: response.data
+      res: response.data
     }
   } catch (error) {
     return {
