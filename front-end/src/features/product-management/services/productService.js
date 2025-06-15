@@ -14,7 +14,7 @@ const getAuthHeader = () => {
 };
 
 const transformProduct = (product) => ({
-  id: product.id,                   // Changed from product_id to id
+  id: product.product_id,            // use product_id from backend
   name: product.name,               // Keeping original name instead of translating
   price_per_unit: product.price_per_unit,
   quantity: product.quantity,       // Keeping as number instead of string with units
@@ -31,9 +31,11 @@ export const productService = {
   getProducts: async () => {
     try {
       const response = await axios.get(`${BASE_URL}/products`);
+      const products = response.data.map(transformProduct);
+      // console.log("Productos actuales:", products);
       return { 
         success: true, 
-        products: response.data.map(transformProduct)
+        products
       };
     } catch (error) {
       return {
@@ -50,6 +52,7 @@ export const productService = {
         productData,
         config
       );
+      // console.log('Producto creado (backend):', response.data);
       return { 
         success: true, 
         product: transformProduct(response.data)

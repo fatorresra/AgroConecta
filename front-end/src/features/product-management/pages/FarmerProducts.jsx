@@ -65,6 +65,7 @@ export default function FarmerProductsPage() {
     if (success) {
       setModalNuevoProducto(false);
     }
+    return success;
   };
 
   return (
@@ -93,37 +94,24 @@ export default function FarmerProductsPage() {
               </Button>
             </div>
 
-            {isLoading ? (
-              <div className="text-center py-8">Cargando productos...</div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-600">
-                {error}
-                <Button 
-                  variant="link" 
-                  className="ml-2" 
-                  onClick={clearError}
-                >
-                  Intentar de nuevo
-                </Button>
-              </div>
-            ) : (
-              <ProductList
-                productos={products}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-              />
-            )}
+            <ProductList
+              productos={products}
+              onEdit={handleEditProduct}
+              onDelete={handleDeleteProduct}
+            />
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Modales */}
-      <NewProductModal
-        open={modalNuevoProducto}
-        onOpenChange={setModalNuevoProducto}
-        onSave={handleCreateProduct}
-      />
-
+      {modalNuevoProducto && (
+        <NewProductModal
+          open={modalNuevoProducto}
+          onOpenChange={setModalNuevoProducto}
+          onSave={handleCreateProduct}
+        />
+      )}
+      
       {selectedProduct && (
         <>
           <EditProductModal

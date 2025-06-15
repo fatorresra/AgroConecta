@@ -11,10 +11,11 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
       </div>
     );
   }
-
+  console.log("Renderizando ProductList con productos:", productos);
   return (
     <div className="grid gap-6">
       {productos.map((producto) => (
+        
         <Card key={producto.id}>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">

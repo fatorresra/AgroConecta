@@ -18,8 +18,9 @@ export const useProducts = () => {
 
   useEffect(() => {
     fetchProducts();
-    console.log(products);
-  }, [fetchProducts]);
+    // Only on mount
+    // eslint-disable-next-line
+  }, []);
 
   return {
     // Estado
