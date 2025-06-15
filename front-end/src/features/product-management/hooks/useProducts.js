@@ -18,6 +18,7 @@ export const useProducts = () => {
 
   useEffect(() => {
     fetchProducts();
+    console.log(products);
   }, [fetchProducts]);
 
   return {

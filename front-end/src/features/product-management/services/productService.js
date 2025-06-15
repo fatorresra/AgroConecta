@@ -14,19 +14,19 @@ const getAuthHeader = () => {
 };
 
 const transformProduct = (product) => ({
-  id: product.product_id,
-  nombre: product.name,
-  precio: product.price_per_unit,
-  cantidad: `${product.quantity} unidades`,
-  estado: "Activo", //could be implemeted later in the backend
-  imagen: product.image || "/placeholder.svg?height=80&width=80", // default image if not provided
-  visitas: 0,//could be implemeted later in backend
-  fechaPublicacion: new Date(product.created_at).toLocaleDateString(),
-  tipo: product.type,
-  descripcion: product.description,
-  fechaCosecha: new Date(product.harvest_date).toLocaleDateString()
+  id: product.id,                   // Changed from product_id to id
+  name: product.name,               // Keeping original name instead of translating
+  price_per_unit: product.price_per_unit,
+  quantity: product.quantity,       // Keeping as number instead of string with units
+  type: product.type,              // Keeping original type instead of translating
+  description: product.description,
+  harvest_date: product.harvest_date,
+  created_at: product.created_at,
+  // Optional fields with defaults
+  status: "Activo",                // For future implementation
+  image: product.image || "/placeholder.svg?height=80&width=80",
+  visits: 0                        // For future implementation
 });
-
 export const productService = {
   getProducts: async () => {
     try {
