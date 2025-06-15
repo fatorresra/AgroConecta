@@ -24,7 +24,8 @@ export default function ProductFormModal({
   description = isEdit 
     ? "Modifica la información de tu producto"
     : "Completa la información de tu producto para publicarlo en la plataforma"
-}) {  const [formData, setFormData] = useState(producto || {
+}) {  
+  const [formData, setFormData] = useState(producto || {
     name: producto?.nombre || '',
     type: producto?.tipo || '',
     price_per_unit: producto?.precio || '',
@@ -33,6 +34,7 @@ export default function ProductFormModal({
     harvest_date: producto?.fechaCosecha || ''
   })
   const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (field, value) => {
     setFormData(prev => ({
@@ -41,7 +43,10 @@ export default function ProductFormModal({
     }))
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
     const validationErrors = {}
     if (!formData.name) validationErrors.name = "El nombre es requerido"
     if (!formData.type) validationErrors.type = "La categoría es requerida"
@@ -51,11 +56,18 @@ export default function ProductFormModal({
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
+      setIsSubmitting(false)
       return
     }
 
-    await onSave(formData)
-    onOpenChange(false)
+    try {
+      const success = await onSave(formData)
+      if (success) {
+        onOpenChange(false)
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -107,14 +119,25 @@ export default function ProductFormModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
             Cancelar
           </Button>
           <Button 
-            className="bg-green-600 hover:bg-green-700" 
+            type="submit"
+            disabled={isSubmitting}
             onClick={handleSubmit}
+            className="bg-green-600 hover:bg-green-700"
           >
-            {isEdit ? "Guardar Cambios" : "Publicar Producto"}
+            {isSubmitting 
+              ? "Guardando..." 
+              : isEdit 
+                ? "Guardar Cambios" 
+                : "Publicar Producto"
+            }
           </Button>
         </DialogFooter>
       </DialogContent>
