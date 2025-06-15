@@ -70,55 +70,12 @@ export const productService = {
       };
     }
   },
-
   updateProduct: async (id, productData) => {
-    try {
-      const config = getAuthHeader();
-      const response = await axios.patch(
-        `${BASE_URL}/products/${id}`, 
-        productData,
-        config
-      );
-      return { 
-        success: true, 
-        product: transformProduct(response.data)
-      };
-    } catch (error) {
-      if (error.response?.status === 401) {
-        return {
-          success: false,
-          message: "No autorizado. Por favor, inicie sesión nuevamente.",
-        };
-      }
-      return {
-        success: false,
-        message: error.response?.data?.message || "Error al actualizar producto",
-      };
-    }
+    // Placeholder: Implementar lógica de actualización de producto
+    throw new Error("updateProduct no implementado. Implementa este método para editar productos.");
   },
-
   deleteProduct: async (id) => {
-    try {
-      const config = getAuthHeader();
-      await axios.delete(
-        `${BASE_URL}/products/${id}`,
-        config
-      );
-      return { 
-        success: true,
-        id 
-      };
-    } catch (error) {
-      if (error.response?.status === 401) {
-        return {
-          success: false,
-          message: "No autorizado. Por favor, inicie sesión nuevamente.",
-        };
-      }
-      return {
-        success: false,
-        message: error.response?.data?.message || "Error al eliminar producto",
-      };
-    }
+    // Placeholder: Implementar lógica de eliminación de producto
+    throw new Error("deleteProduct no implementado. Implementa este método para eliminar productos.");
   }
 };

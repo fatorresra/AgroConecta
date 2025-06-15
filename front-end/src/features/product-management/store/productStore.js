@@ -71,6 +71,15 @@ export const useProductStore = create((set) => ({
     }
   },
 
+  updateProduct: async (id, productData) => {
+    // Placeholder: Implementar lógica de actualización de producto en el store
+    throw new Error("updateProduct no implementado. Implementa este método para editar productos en el store.");
+  },
+  deleteProduct: async (id) => {
+    // Placeholder: Implementar lógica de eliminación de producto en el store
+    throw new Error("deleteProduct no implementado. Implementa este método para eliminar productos en el store.");
+  },
+
   clearError: () => set({ error: null }),
   setSelectedProduct: (product) => set({ selectedProduct: product }),
   clearSelectedProduct: () => set({ selectedProduct: null })
