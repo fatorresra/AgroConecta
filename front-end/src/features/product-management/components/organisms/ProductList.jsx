@@ -15,28 +15,26 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
   return (
     <div className="grid gap-6">
       {productos.map((producto) => (
-        
         <Card key={producto.id}>
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
-               {/* product iamge can be nabled lated */}
-               
+              {/* product image can be enabled later */}
               {/* <img
-                src={producto.imagen || "/placeholder.svg"}
-                alt={producto.nombre}
+                src={producto.image || "/placeholder.svg"}
+                alt={producto.name}
                 className="w-20 h-20 rounded-lg object-cover"
               /> */}
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">{producto.nombre || producto.name}</h3>
-                  <Badge variant={producto.estado === "Activo" ? "default" : "secondary"}>
-                    {producto.tipo || producto.type}
+                  <h3 className="text-lg font-semibold">{producto.name}</h3>
+                  <Badge variant={producto.status === "Activo" ? "default" : "secondary"}>
+                    {producto.type}
                   </Badge>
                 </div>
                 <div className="grid md:grid-cols-4 gap-4 text-sm text-gray-600">
                   <div className="flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    ${(producto.precio || producto.price_per_unit || 0).toLocaleString()}
+                    ${producto.price_per_unit?.toLocaleString() || 0}
                   </div>
                   <div className="flex items-center">
                     <Package className="h-4 w-4 mr-1" />
@@ -44,11 +42,11 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    Cosecha: {new Date(producto.harvest_date).toLocaleDateString()}
+                    Cosecha: {producto.harvest_date ? new Date(producto.harvest_date).toLocaleDateString() : ''}
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    Publicado: {new Date(producto.created_at).toLocaleDateString()}
+                    Publicado: {producto.created_at ? new Date(producto.created_at).toLocaleDateString() : ''}
                   </div>
                 </div>
               </div>
