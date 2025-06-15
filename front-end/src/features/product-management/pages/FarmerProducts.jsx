@@ -9,70 +9,63 @@ import ProductList from "../components/organisms/ProductList"
 import NewProductModal from "../components/organisms/NewProductModal"
 import EditProductModal from "../components/organisms/EditProductModal"
 import DeleteProductModal from "../components/organisms/DeleteProductModal"
-import { getProducts } from "../services/productService"
-// const productosRecientes = [
-//   {
-//     id: 1,
-//     nombre: "Café Orgánico Premium",
-//     precio: 15000,
-//     cantidad: "500 kg",
-//     estado: "Activo",
-//     visitas: 45,
-//     fechaPublicacion: "2024-01-15",
-//     imagen: "/placeholder.svg?height=80&width=80",
-//   },
-//   {
-//     id: 2,
-//     nombre: "Aguacate Hass",
-//     precio: 3500,
-//     cantidad: "200 kg",
-//     estado: "Vendido",
-//     visitas: 32,
-//     fechaPublicacion: "2024-01-10",
-//     imagen: "/placeholder.svg?height=80&width=80",
-//   },
-//   {
-//     id: 3,
-//     nombre: "Plátano Hartón",
-//     precio: 2200,
-//     cantidad: "1000 kg",
-//     estado: "Activo",
-//     visitas: 28,
-//     fechaPublicacion: "2024-01-08",
-//     imagen: "/placeholder.svg?height=80&width=80",
-//   },
-// ]
-
+import { useProducts } from "../hooks/useProducts"
+// import { useAuthStore } from 
 export default function FarmerProductsPage() {
   const [activeTab, setActiveTab] = useState("productos")
   const [modalNuevoProducto, setModalNuevoProducto] = useState(false)
   const [modalEditarProducto, setModalEditarProducto] = useState(false)
   const [modalEliminarProducto, setModalEliminarProducto] = useState(false)
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null)
+
+  const {
+    products,
+    isLoading,
+    error,
+    selectedProduct,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    setSelectedProduct,
+    clearSelectedProduct,
+    clearError
+  } = useProducts();
 
   const handleEditProduct = (producto) => {
-    setProductoSeleccionado(producto)
-    setModalEditarProducto(true)
-  }
+    setSelectedProduct(producto);
+    setModalEditarProducto(true);
+  };
 
   const handleDeleteProduct = (producto) => {
-    setProductoSeleccionado(producto)
-    setModalEliminarProducto(true)
-  }
+    setSelectedProduct(producto);
+    setModalEliminarProducto(true);
+  };
 
-  const handleViewProduct = (producto) => {
-    // TODO: Implementar vista detallada del producto
-    console.log("Ver producto:", producto.id)
-  }
-  
-
-  const response = await getProducts();
-    if (products.success) {
-      productosRecientes = response.products;
-    } 
-  else {
-      console.error("Error al obtener productos:", response.message);
+  const handleConfirmDelete = async () => {
+    if (selectedProduct) {
+      const success = await deleteProduct(selectedProduct.id);
+      if (success) {
+        setModalEliminarProducto(false);
+        clearSelectedProduct();
+      }
     }
+  };
+
+  const handleSaveEdit = async (productData) => {
+    if (selectedProduct) {
+      const success = await updateProduct(selectedProduct.id, productData);
+      if (success) {
+        setModalEditarProducto(false);
+        clearSelectedProduct();
+      }
+    }
+  };
+
+  const handleCreateProduct = async (productData) => {
+    const success = await addProduct(productData);
+    if (success) {
+      setModalNuevoProducto(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,69 +81,72 @@ export default function FarmerProductsPage() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="productos">Mis Productos</TabsTrigger>
-            <TabsTrigger value="mensajes">Mensajes</TabsTrigger>
-            <TabsTrigger value="ventas">Ventas</TabsTrigger>
-          </TabsList>
-
           <TabsContent value="productos" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Mis Productos</h2>
-              <Button className="bg-green-600 hover:bg-green-700" onClick={() => setModalNuevoProducto(true)}>
+              <Button 
+                className="bg-green-600 hover:bg-green-700" 
+                onClick={() => setModalNuevoProducto(true)}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Nuevo Producto
               </Button>
             </div>
 
-            <ProductList
-              productos={productosRecientes}
-              onView={handleViewProduct}
-              onEdit={handleEditProduct}
-              onDelete={handleDeleteProduct}
-            />
-          </TabsContent>
-
-          <TabsContent value="mensajes" className="space-y-6">
-            {/* Contenido de Mensajes */}
-          </TabsContent>
-
-          <TabsContent value="ventas" className="space-y-6">
-            {/* Contenido de Ventas */}
+            {isLoading ? (
+              <div className="text-center py-8">Cargando productos...</div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-600">
+                {error}
+                <Button 
+                  variant="link" 
+                  className="ml-2" 
+                  onClick={clearError}
+                >
+                  Intentar de nuevo
+                </Button>
+              </div>
+            ) : (
+              <ProductList
+                productos={products}
+                onEdit={handleEditProduct}
+                onDelete={handleDeleteProduct}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </div>
 
+      {/* Modales */}
       <NewProductModal
         open={modalNuevoProducto}
         onOpenChange={setModalNuevoProducto}
-        onSave={() => {
-          // TODO: Implementar lógica para guardar nuevo producto
-          setModalNuevoProducto(false)
-        }}
+        onSave={handleCreateProduct}
       />
 
-      <EditProductModal
-        producto={productoSeleccionado}
-        open={modalEditarProducto}
-        onOpenChange={setModalEditarProducto}
-        onSave={(id) => {
-          // TODO: Implementar lógica para guardar cambios
-          console.log("Guardar cambios del producto:", id)
-          setModalEditarProducto(false)
-        }}
-      />
+      {selectedProduct && (
+        <>
+          <EditProductModal
+            open={modalEditarProducto}
+            onOpenChange={(open) => {
+              setModalEditarProducto(open);
+              if (!open) clearSelectedProduct();
+            }}
+            onSave={handleSaveEdit}
+            producto={selectedProduct}
+          />
 
-      <DeleteProductModal
-        producto={productoSeleccionado}
-        open={modalEliminarProducto}
-        onOpenChange={setModalEliminarProducto}
-        onDelete={(id) => {
-          // TODO: Implementar lógica para eliminar producto
-          console.log("Eliminar producto:", id)
-          setModalEliminarProducto(false)
-        }}
-      />
+          <DeleteProductModal
+            open={modalEliminarProducto}
+            onOpenChange={(open) => {
+              setModalEliminarProducto(open);
+              if (!open) clearSelectedProduct();
+            }}
+            onConfirm={handleConfirmDelete}
+            producto={selectedProduct}
+          />
+        </>
+      )}
     </div>
   )
 }

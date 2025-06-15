@@ -1,40 +1,42 @@
 import ProductInput from "../atoms/ProductInput"
-import ProductSelect from "../atoms/ProductSelect"
 
 export default function ProductPricing({ 
   producto, 
   onChange,
   errors = {}
 }) {
-  const unitOptions = [
-    { value: "kg", label: "Kilogramos" },
-    { value: "g", label: "Gramos" },
-    { value: "lb", label: "Libras" },
-    { value: "unidad", label: "Unidad" },
-    { value: "docena", label: "Docena" }
-  ]
-
   return (
     <div className="grid grid-cols-2 gap-4">
       <ProductInput 
-        id="precio"
-        label="Precio (COP)"
+        id="price_per_unit"
+        label="Precio por Unidad (COP)"
         type="number"
         placeholder="Ej: 25000"
-        defaultValue={producto?.precio}
-        onChange={(e) => onChange("precio", e.target.value)}
-        error={errors.precio}
+        defaultValue={producto?.price_per_unit}
+        onChange={(e) => onChange("price_per_unit", e.target.value)}
+        error={errors.price_per_unit}
       />
       
-      <ProductSelect
-        id="unidad"
-        label="Unidad de Medida"
-        options={unitOptions}
-        defaultValue={producto?.unidad}
-        onChange={(value) => onChange("unidad", value)}
-        placeholder="Selecciona unidad"
-        error={errors.unidad}
+      <ProductInput
+        id="quantity"
+        label="Cantidad Disponible"
+        type="number"
+        placeholder="Ej: 100"
+        defaultValue={producto?.quantity}
+        onChange={(e) => onChange("quantity", e.target.value)}
+        error={errors.quantity}
       />
+
+      <div className="col-span-2">
+        <ProductInput
+          id="harvest_date"
+          label="Fecha de Cosecha"
+          type="date"
+          defaultValue={producto?.harvest_date}
+          onChange={(e) => onChange("harvest_date", e.target.value)}
+          error={errors.harvest_date}
+        />
+      </div>
     </div>
   )
 }

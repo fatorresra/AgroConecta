@@ -1,7 +1,17 @@
 import axios from "axios";
 import { PORTS } from "../../../shared/utils/Ports";
+import { useAuthStore } from "../../authentication/store/AuthStore";
 
 const BASE_URL = PORTS.PRODUCTS.BASE_URL;
+
+const getAuthHeader = () => {
+  const token = useAuthStore.getState().token;
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  };
+};
 
 const transformProduct = (product) => ({
   id: product.product_id,
@@ -32,15 +42,25 @@ export const productService = {
       };
     }
   },
-
   createProduct: async (productData) => {
     try {
-      const response = await axios.post(`${BASE_URL}/products`, productData);
+      const config = getAuthHeader();
+      const response = await axios.post(
+        `${BASE_URL}/products`, 
+        productData,
+        config
+      );
       return { 
         success: true, 
         product: transformProduct(response.data)
       };
     } catch (error) {
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
       return {
         success: false,
         message: error.response?.data?.message || "Error al crear producto",
@@ -50,12 +70,23 @@ export const productService = {
 
   updateProduct: async (id, productData) => {
     try {
-      const response = await axios.patch(`${BASE_URL}/products/${id}`, productData);
+      const config = getAuthHeader();
+      const response = await axios.patch(
+        `${BASE_URL}/products/${id}`, 
+        productData,
+        config
+      );
       return { 
         success: true, 
         product: transformProduct(response.data)
       };
     } catch (error) {
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
       return {
         success: false,
         message: error.response?.data?.message || "Error al actualizar producto",
@@ -65,12 +96,22 @@ export const productService = {
 
   deleteProduct: async (id) => {
     try {
-      await axios.delete(`${BASE_URL}/products/${id}`);
+      const config = getAuthHeader();
+      await axios.delete(
+        `${BASE_URL}/products/${id}`,
+        config
+      );
       return { 
         success: true,
         id 
       };
     } catch (error) {
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
       return {
         success: false,
         message: error.response?.data?.message || "Error al eliminar producto",

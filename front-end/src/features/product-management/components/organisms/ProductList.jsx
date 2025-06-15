@@ -4,12 +4,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export default function ProductList({ productos, onEdit, onDelete, onView }) {
-  if (!productos.length) {
+  if (!productos?.length) {
     return (
       <div className="text-center py-8 text-gray-500">
         No hay productos disponibles
       </div>
-    )
+    );
   }
 
   return (
@@ -27,27 +27,27 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
               /> */}
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">{producto.nombre}</h3>
+                  <h3 className="text-lg font-semibold">{producto.nombre || producto.name}</h3>
                   <Badge variant={producto.estado === "Activo" ? "default" : "secondary"}>
-                    {producto.tipo}
+                    {producto.tipo || producto.type}
                   </Badge>
                 </div>
                 <div className="grid md:grid-cols-4 gap-4 text-sm text-gray-600">
                   <div className="flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    ${producto.precio.toLocaleString()}
+                    ${(producto.precio || producto.price_per_unit || 0).toLocaleString()}
                   </div>
                   <div className="flex items-center">
                     <Package className="h-4 w-4 mr-1" />
-                    {producto.cantidad}
+                    {producto.quantity || 0} unidades
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    Cosecha: {producto.fechaCosecha}
+                    Cosecha: {new Date(producto.harvest_date).toLocaleDateString()}
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    Publicado: {producto.fechaPublicacion}
+                    Publicado: {new Date(producto.created_at).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -76,5 +76,5 @@ export default function ProductList({ productos, onEdit, onDelete, onView }) {
         </Card>
       ))}
     </div>
-  )
+  );
 }

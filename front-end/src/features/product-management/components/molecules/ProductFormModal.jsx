@@ -24,7 +24,14 @@ export default function ProductFormModal({
   description = isEdit 
     ? "Modifica la información de tu producto"
     : "Completa la información de tu producto para publicarlo en la plataforma"
-}) {  const [formData, setFormData] = useState(producto || {})
+}) {  const [formData, setFormData] = useState(producto || {
+    name: producto?.nombre || '',
+    type: producto?.tipo || '',
+    price_per_unit: producto?.precio || '',
+    quantity: producto?.cantidad?.split(' ')[0] || '', // Extraemos solo el número
+    description: producto?.descripcion || '',
+    harvest_date: producto?.fechaCosecha || ''
+  })
   const [errors, setErrors] = useState({})
 
   const handleChange = (field, value) => {
@@ -35,12 +42,12 @@ export default function ProductFormModal({
   }
 
   const handleSubmit = async () => {
-    // Aquí iría la validación
     const validationErrors = {}
-    if (!formData.nombre) validationErrors.nombre = "El nombre es requerido"
-    if (!formData.categoria) validationErrors.categoria = "La categoría es requerida"
-    if (!formData.precio) validationErrors.precio = "El precio es requerido"
-    if (!formData.unidad) validationErrors.unidad = "La unidad es requerida"
+    if (!formData.name) validationErrors.name = "El nombre es requerido"
+    if (!formData.type) validationErrors.type = "La categoría es requerida"
+    if (!formData.price_per_unit) validationErrors.price_per_unit = "El precio es requerido"
+    if (!formData.quantity) validationErrors.quantity = "La cantidad es requerida"
+    if (!formData.harvest_date) validationErrors.harvest_date = "La fecha de cosecha es requerida"
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
@@ -73,16 +80,16 @@ export default function ProductFormModal({
           />
 
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción</Label>
+            <Label htmlFor="description">Descripción</Label>
             <Textarea 
-              id="descripcion" 
+              id="description" 
               placeholder="Describe tu producto, su calidad, proceso de cultivo, etc." 
-              defaultValue={producto?.descripcion}
-              onChange={(e) => handleChange("descripcion", e.target.value)}
-              className={errors.descripcion ? "border-red-500" : ""}
+              defaultValue={producto?.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              className={errors.description ? "border-red-500" : ""}
             />
-            {errors.descripcion && (
-              <p className="text-xs text-red-500">{errors.descripcion}</p>
+            {errors.description && (
+              <p className="text-xs text-red-500">{errors.description}</p>
             )}
           </div>
 
