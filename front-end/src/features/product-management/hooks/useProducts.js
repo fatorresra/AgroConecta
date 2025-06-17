@@ -9,8 +9,8 @@ export const useProducts = () => {
     selectedProduct,
     fetchProducts,
     addProduct,
-    // updateProduct,
-    // deleteProduct,
+    updateProduct,
+    deleteProduct,
     setSelectedProduct,
     clearSelectedProduct,
     clearError
@@ -31,8 +31,8 @@ export const useProducts = () => {
     
     // Acciones
     addProduct,
-    updateProduct: (...args) => { throw new Error("updateProduct no implementado. Implementa este método en el hook."); },
-    deleteProduct: (...args) => { throw new Error("deleteProduct no implementado. Implementa este método en el hook."); },
+    updateProduct,
+    deleteProduct,
     setSelectedProduct,
     clearSelectedProduct,
     clearError,

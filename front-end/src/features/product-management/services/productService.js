@@ -6,6 +6,9 @@ const BASE_URL = PORTS.PRODUCTS.BASE_URL;
 
 const getAuthHeader = () => {
   const token = useAuthStore.getState().token;
+  if (!token) {
+    console.warn('No se encontró token de autorización');
+  }
   return {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -14,18 +17,17 @@ const getAuthHeader = () => {
 };
 
 const transformProduct = (product) => ({
-  id: product.product_id,            // use product_id from backend
-  name: product.name,               // Keeping original name instead of translating
-  price_per_unit: product.price_per_unit,
-  quantity: product.quantity,       // Keeping as number instead of string with units
-  type: product.type,              // Keeping original type instead of translating
-  description: product.description,
-  harvest_date: product.harvest_date,
-  created_at: product.created_at,
-  // Optional fields with defaults
-  status: "Activo",                // For future implementation
+  id: product.product_id ?? null,            // use product_id from backend
+  name: product.name ?? '',                  // Ensure string
+  price_per_unit: Number(product.price_per_unit) || 0,
+  quantity: Number(product.quantity) || 0,   // Ensure number
+  type: product.type ?? '',                  // Ensure string
+  description: product.description ?? '',     // Ensure string
+  harvest_date: product.harvest_date || null,
+  created_at: product.created_at || new Date().toISOString(),
+  status: "Activo",                         // For future implementation
   image: product.image || "/placeholder.svg?height=80&width=80",
-  visits: 0                        // For future implementation
+  visits: Number(product.visits) || 0        // For future implementation
 });
 export const productService = {
   getProducts: async () => {
@@ -44,6 +46,44 @@ export const productService = {
       };
     }
   },
+
+
+  getMyProducts: async () => {
+    try {
+      const { headers } = getAuthHeader();
+      const response = await axios.get(`${BASE_URL}/products/me`, { headers });
+      // Ahora usamos response.data.products que es el array de productos
+      const products = response.data.products.map(transformProduct);
+      console.log('Products fetched:', products); // Para debug
+      return { 
+        success: true, 
+        products,
+        count: response.data.count,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error('Error fetching my products:', error);
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          message: "No tienes permisos para ver estos productos",
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al obtener tus productos",
+      };
+    }
+  },
+
+
+
   createProduct: async (productData) => {
     try {
       const config = getAuthHeader();
@@ -71,11 +111,56 @@ export const productService = {
     }
   },
   updateProduct: async (id, productData) => {
-    // Placeholder: Implementar lógica de actualización de producto
-    throw new Error("updateProduct no implementado. Implementa este método para editar productos.");
+    try {
+      const config = getAuthHeader();
+      const response = await axios.patch(
+        `${BASE_URL}/products/${id}`,
+        productData,
+        config
+      );
+      return {
+        success: true,
+        product: transformProduct(response.data)
+      };
+    } catch (error) {
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al actualizar producto",
+      };
+    }
   },
   deleteProduct: async (id) => {
-    // Placeholder: Implementar lógica de eliminación de producto
-    throw new Error("deleteProduct no implementado. Implementa este método para eliminar productos.");
+    try {
+      const { headers } = getAuthHeader();
+      await axios.delete(`${BASE_URL}/products/${id}`, { headers });
+      return {
+        success: true,
+        id
+      };
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      if (error.response?.status === 403) {
+        return {
+          success: false,
+          message: "No tienes permisos para eliminar este producto.",
+        };
+      }
+      if (error.response?.status === 401) {
+        return {
+          success: false,
+          message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || "Error al eliminar producto",
+      };
+    }
   }
 };

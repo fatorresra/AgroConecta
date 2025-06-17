@@ -11,8 +11,9 @@ export const useProductStore = create((set) => ({
   fetchProducts: async () => {
     set({ isLoading: true });
     try {
-      const response = await productService.getProducts();
+      const response = await productService.getMyProducts();
       if (response.success) {
+        // response.products already contains the transformed products array
         set({ products: response.products, isLoading: false, error: null });
       } else {
         set({ error: response.message, isLoading: false });
@@ -23,7 +24,7 @@ export const useProductStore = create((set) => ({
   },
 
   addProduct: async (productData) => {
-    // 1. Add temp product
+    // 1. Add temp product with only English field names
     const tempId = `temp-${Date.now()}`;
     const tempProduct = {
       ...productData,
@@ -31,19 +32,7 @@ export const useProductStore = create((set) => ({
       status: "Activo",
       image: "/placeholder.svg?height=80&width=80",
       visits: 0,
-      created_at: new Date().toISOString(),
-      // Alias y campos originales para compatibilidad total
-      nombre: productData.name || '',
-      name: productData.name || '',
-      tipo: productData.type || '',
-      type: productData.type || '',
-      precio: Number(productData.price_per_unit) || 0,
-      price_per_unit: Number(productData.price_per_unit) || 0,
-      quantity: Number(productData.quantity) || 0,
-      descripcion: productData.description || '',
-      description: productData.description || '',
-      fechaCosecha: productData.harvest_date || '',
-      harvest_date: productData.harvest_date || ''
+      created_at: new Date().toISOString()
     };
     set(state => ({
       products: [...state.products, tempProduct],
@@ -51,17 +40,22 @@ export const useProductStore = create((set) => ({
     }));
     try {
       const response = await productService.createProduct(productData);
-      if (response.success && response.product && response.product.id) {
-        // Solo reemplaza si el producto real tiene id válido
+      if (response.success && response.product) {
+        // Replace temp product with real one from backend
         set(state => ({
           products: state.products.map(p =>
             p.id === tempId ? response.product : p
           ),
           error: null
         }));
+        return true;
       }
-      // Si no hay producto real válido, deja el temporal
-      return true;
+      // If no valid product in response, remove the temp one
+      set(state => ({
+        products: state.products.filter(p => p.id !== tempId),
+        error: "Failed to create product"
+      }));
+      return false;
     } catch (error) {
       set(state => ({
         products: state.products.filter(p => p.id !== tempId),
@@ -72,12 +66,40 @@ export const useProductStore = create((set) => ({
   },
 
   updateProduct: async (id, productData) => {
-    // Placeholder: Implementar lógica de actualización de producto en el store
-    throw new Error("updateProduct no implementado. Implementa este método para editar productos en el store.");
+    try {
+      const response = await productService.updateProduct(id, productData);
+      if (response.success) {
+        set(state => ({
+          products: state.products.map(p =>
+            p.id === id ? response.product : p
+          ),
+          error: null
+        }));
+        return true;
+      }
+      set({ error: response.message });
+      return false;
+    } catch (error) {
+      set({ error: error.message });
+      return false;
+    }
   },
   deleteProduct: async (id) => {
-    // Placeholder: Implementar lógica de eliminación de producto en el store
-    throw new Error("deleteProduct no implementado. Implementa este método para eliminar productos en el store.");
+    try {
+      const response = await productService.deleteProduct(id);
+      if (response.success) {
+        set(state => ({
+          products: state.products.filter(p => p.id !== id),
+          error: null
+        }));
+        return true;
+      }
+      set({ error: response.message });
+      return false;
+    } catch (error) {
+      set({ error: error.message });
+      return false;
+    }
   },
 
   clearError: () => set({ error: null }),
