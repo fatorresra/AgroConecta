@@ -76,7 +76,7 @@ export default function Header({
         </div>
 
         <div className="flex items-center space-x-3">
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
           {renderAuthSection()}
         </div>
       </div>

@@ -34,7 +34,7 @@ export default function FeaturedProducts() {
 
 				<div className="text-center mt-12">
 					<Button variant="outline" size="lg" asChild>
-						<Link to="/productos">Ver más productos</Link>
+						<Link to="/products">Ver más productos</Link>
 					</Button>
 				</div>
 			</div>

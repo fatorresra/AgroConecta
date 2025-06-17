@@ -24,7 +24,7 @@ export default function ProductFormModal({
   description = isEdit 
     ? "Modifica la información de tu producto"
     : "Completa la información de tu producto para publicarlo en la plataforma"
-}) {    const [formData, setFormData] = useState(() => {
+}) {  const [formData, setFormData] = useState(() => {
     if (!producto) return {
       name: '',
       type: '',
@@ -35,13 +35,19 @@ export default function ProductFormModal({
     };
 
     // Si tenemos un producto, aseguramos los tipos de datos correctos
+    const harvestDate = producto.harvest_date 
+      ? new Date(producto.harvest_date).toISOString().split('T')[0] 
+      : '';
+    
+    console.log('Initial harvest date:', producto.harvest_date, 'formatted:', harvestDate); // Debug log
+
     return {
       name: producto.name || '',
       type: producto.type || '',
       price_per_unit: producto.price_per_unit?.toString() || '',
       quantity: producto.quantity?.toString() || '',
       description: producto.description || '',
-      harvest_date: producto.harvest_date ? new Date(producto.harvest_date).toISOString().split('T')[0] : ''
+      harvest_date: harvestDate
     };
   })
   const [errors, setErrors] = useState({})

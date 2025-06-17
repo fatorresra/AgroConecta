@@ -22,7 +22,6 @@ export const useProductStore = create((set, get) => ({
       set({ error: error.message, isLoading: false });
     }
   },
-
   addProduct: async (productData) => {
     // 1. Create optimistic temp product with all required fields
     const tempId = `temp-${Date.now()}`;
@@ -46,31 +45,40 @@ export const useProductStore = create((set, get) => ({
       error: null
     }));
 
-    try {
-      // 3. Create product in backend
-      const response = await productService.createProduct(productData);
-      if (response.success) {
-        // Keep temp product until next natural fetch
-        console.log('Product created successfully, keeping temp version until next fetch');
-        return true;
+    // 3. Return true immediately to close the modal
+    setTimeout(async () => {
+      try {
+        // 4. Try to create the product in the backend
+        const response = await productService.createProduct(productData);
+        
+        if (response.success) {
+          // 5. If successful, update the products list
+          const productsResponse = await productService.getMyProducts();
+          if (productsResponse.success) {
+            set({ 
+              products: productsResponse.products,
+              error: null
+            });
+          }
+        } else {
+          // 6. If creation failed, remove temp product
+          console.error('Failed to create product:', response);
+          set(state => ({
+            products: state.products.filter(p => p.id !== tempId),
+            error: "Failed to create product"
+          }));
+        }
+      } catch (error) {
+        // 7. If error occurred, remove temp product
+        console.error('Error creating product:', error);
+        set(state => ({
+          products: state.products.filter(p => p.id !== tempId),
+          error: error.message
+        }));
       }
-      
-      // 4. If creation failed, remove temp product
-      console.error('Failed to create product:', response);
-      set(state => ({
-        products: state.products.filter(p => p.id !== tempId),
-        error: "Failed to create product"
-      }));
-      return false;
-    } catch (error) {
-      // 5. Handle any errors by removing temp product
-      console.error('Error creating product:', error);
-      set(state => ({
-        products: state.products.filter(p => p.id !== tempId),
-        error: error.message
-      }));
-      return false;
-    }
+    }, 0);
+
+    return true;
   },
 
   updateProduct: async (id, productData) => {

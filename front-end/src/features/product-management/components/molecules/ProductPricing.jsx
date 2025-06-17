@@ -44,7 +44,7 @@ export default function ProductPricing({
           id="harvest_date"
           label="Fecha de Cosecha"
           type="date"
-          defaultValue={producto?.harvest_date}
+          defaultValue={producto?.harvest_date ? new Date(producto.harvest_date).toISOString().split('T')[0] : ''}
           onChange={(e) => {
             const date = e.target.value;
             // La fecha se convertirá a ISO 8601 en el momento del envío
