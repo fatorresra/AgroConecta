@@ -17,17 +17,18 @@ const getAuthHeader = () => {
 };
 
 const transformProduct = (product) => ({
-  id: product.product_id ?? null,            // use product_id from backend
-  name: product.name ?? '',                  // Ensure string
-  price_per_unit: Number(product.price_per_unit) || 0,
-  quantity: Number(product.quantity) || 0,   // Ensure number
-  type: product.type ?? '',                  // Ensure string
-  description: product.description ?? '',     // Ensure string
+  // Keep existing id if it's a temp id (starts with 'temp-'), otherwise use product_id from backend
+  id: product.id?.startsWith?.('temp-') ? product.id : product.product_id,
+  name: product.name || '',                  // Use || instead of ?? for empty strings
+  price_per_unit: Number(product.price_per_unit || 0),
+  quantity: Number(product.quantity || 0),   
+  type: product.type || '',                  
+  description: product.description || '',     
   harvest_date: product.harvest_date || null,
   created_at: product.created_at || new Date().toISOString(),
-  status: "Activo",                         // For future implementation
+  status: "Activo",                         
   image: product.image || "/placeholder.svg?height=80&width=80",
-  visits: Number(product.visits) || 0        // For future implementation
+  visits: Number(product.visits || 0)        
 });
 export const productService = {
   getProducts: async () => {
@@ -92,12 +93,16 @@ export const productService = {
         productData,
         config
       );
-      // console.log('Producto creado (backend):', response.data);
+      
+      console.log('Create product response:', response.data);
+      
+      // Solo verificamos si la creación fue exitosa
       return { 
-        success: true, 
-        product: transformProduct(response.data)
+        success: true,
+        message: response.data.message || 'Product created successfully'
       };
     } catch (error) {
+      console.error('Error in createProduct:', error);
       if (error.response?.status === 401) {
         return {
           success: false,
