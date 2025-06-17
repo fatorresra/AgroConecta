@@ -16,20 +16,35 @@ const getAuthHeader = () => {
   };
 };
 
-const transformProduct = (product) => ({
-  // Keep existing id if it's a temp id (starts with 'temp-'), otherwise use product_id from backend
-  id: product.id?.startsWith?.('temp-') ? product.id : product.product_id,
-  name: product.name || '',                  // Use || instead of ?? for empty strings
-  price_per_unit: Number(product.price_per_unit || 0),
-  quantity: Number(product.quantity || 0),   
-  type: product.type || '',                  
-  description: product.description || '',     
-  harvest_date: product.harvest_date || null,
-  created_at: product.created_at || new Date().toISOString(),
-  status: "Activo",                         
-  image: product.image || "/placeholder.svg?height=80&width=80",
-  visits: Number(product.visits || 0)        
-});
+const transformProduct = (product) => {
+  // Si el producto es null o undefined, retornar null
+  if (!product) return null;
+
+  return {
+    // Use product_id from backend, or keep temp id if it exists
+    id: product.id?.startsWith?.('temp-') ? product.id : product.product_id,
+    
+    // Datos básicos
+    name: product.name || '',
+    type: product.type || '',
+    description: product.description || '',
+    
+    // Datos numéricos (asegurar que son números)
+    price_per_unit: Number(product.price_per_unit || 0),
+    quantity: Number(product.quantity || 0),
+    total_value: Number(product.total_value || 0),
+    
+    // Fechas (mantener formato ISO)
+    harvest_date: product.harvest_date || null,
+    created_at: product.created_at || new Date().toISOString(),
+    
+    // Datos adicionales
+    farm_id: product.farm_id || null,
+    status: "Activo",
+    image: product.image || "/placeholder.svg?height=80&width=80",
+    visits: Number(product.visits || 0)
+  };
+};
 export const productService = {
   getProducts: async () => {
     try {
@@ -117,21 +132,52 @@ export const productService = {
   },
   updateProduct: async (id, productData) => {
     try {
+      // Asegurarse de que solo enviamos los campos que han cambiado
+      const updateFields = {};
+      if (productData.name !== undefined) updateFields.name = productData.name;
+      if (productData.type !== undefined) updateFields.type = productData.type;
+      if (productData.quantity !== undefined) updateFields.quantity = Number(productData.quantity);
+      if (productData.price_per_unit !== undefined) updateFields.price_per_unit = Number(productData.price_per_unit);
+      if (productData.description !== undefined) updateFields.description = productData.description;
+      if (productData.harvest_date !== undefined) updateFields.harvest_date = productData.harvest_date;
+
+      console.log('Sending update with fields:', updateFields); // Debug log
+
       const config = getAuthHeader();
       const response = await axios.patch(
         `${BASE_URL}/products/${id}`,
-        productData,
+        updateFields,
         config
       );
+
+      console.log('Update response:', response.data); // Debug log
+
+      // La respuesta tiene la estructura { message, product }
+      if (response.data.product) {
+        return {
+          success: true,
+          message: response.data.message,
+          // Transformamos el producto devuelto por el backend
+          product: transformProduct(response.data.product)
+        };
+      }
+
       return {
-        success: true,
-        product: transformProduct(response.data)
+        success: false,
+        message: "No se recibieron los datos del producto actualizado"
       };
     } catch (error) {
+      console.error('Error updating product:', error.response || error);
       if (error.response?.status === 401) {
         return {
           success: false,
           message: "No autorizado. Por favor, inicie sesión nuevamente.",
+        };
+      }
+      if (error.response?.status === 400) {
+        return {
+          success: false,
+          message: error.response.data.message || "Error en los datos enviados",
         };
       }
       return {

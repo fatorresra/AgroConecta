@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { productService } from '../services/productService';
 
-export const useProductStore = create((set) => ({
+export const useProductStore = create((set, get) => ({
   products: [],
   isLoading: false,
   error: null,
@@ -74,9 +74,28 @@ export const useProductStore = create((set) => ({
   },
 
   updateProduct: async (id, productData) => {
+    // 1. Actualización optimista
+    const originalProducts = get().products;
+    const updatedProduct = {
+      ...originalProducts.find(p => p.id === id),
+      ...productData
+    };
+
     try {
+      // Actualizar inmediatamente en el estado
+      set(state => ({
+        products: state.products.map(p =>
+          p.id === id ? updatedProduct : p
+        ),
+        error: null
+      }));
+
+      // 2. Intentar actualizar en el backend
       const response = await productService.updateProduct(id, productData);
-      if (response.success) {
+      
+      if (response.success && response.product) {
+        // La actualización fue exitosa, actualizamos con los datos del servidor
+        console.log('Backend update successful:', response.product);
         set(state => ({
           products: state.products.map(p =>
             p.id === id ? response.product : p
@@ -85,10 +104,21 @@ export const useProductStore = create((set) => ({
         }));
         return true;
       }
-      set({ error: response.message });
+
+      // 3. Si falló, revertir los cambios y mostrar el error
+      console.error('Update failed:', response.message);
+      set(state => ({
+        products: originalProducts,
+        error: response.message
+      }));
       return false;
     } catch (error) {
-      set({ error: error.message });
+      // 4. En caso de error, revertir y mostrar el error
+      console.error('Update error:', error);
+      set(state => ({
+        products: originalProducts,
+        error: error.message
+      }));
       return false;
     }
   },

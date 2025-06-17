@@ -24,14 +24,25 @@ export default function ProductFormModal({
   description = isEdit 
     ? "Modifica la información de tu producto"
     : "Completa la información de tu producto para publicarlo en la plataforma"
-}) {  
-  const [formData, setFormData] = useState(producto || {
-    name: producto?.nombre || '',
-    type: producto?.tipo || '',
-    price_per_unit: producto?.precio || '',
-    quantity: producto?.cantidad?.split(' ')[0] || '', // Extraemos solo el número
-    description: producto?.descripcion || '',
-    harvest_date: producto?.fechaCosecha || ''
+}) {    const [formData, setFormData] = useState(() => {
+    if (!producto) return {
+      name: '',
+      type: '',
+      price_per_unit: '',
+      quantity: '',
+      description: '',
+      harvest_date: ''
+    };
+
+    // Si tenemos un producto, aseguramos los tipos de datos correctos
+    return {
+      name: producto.name || '',
+      type: producto.type || '',
+      price_per_unit: producto.price_per_unit?.toString() || '',
+      quantity: producto.quantity?.toString() || '',
+      description: producto.description || '',
+      harvest_date: producto.harvest_date ? new Date(producto.harvest_date).toISOString().split('T')[0] : ''
+    };
   })
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -58,15 +69,29 @@ export default function ProductFormModal({
       setErrors(validationErrors)
       setIsSubmitting(false)
       return
-    }
+    }    try {
+      // Formatear los datos antes de enviar
+      const dataToSend = {
+        ...formData,
+        price_per_unit: Number(formData.price_per_unit),
+        quantity: Number(formData.quantity),
+        // Convertir la fecha a formato ISO 8601
+        harvest_date: formData.harvest_date ? new Date(formData.harvest_date).toISOString() : null
+      };
 
-    try {
-      const success = await onSave(formData)
+      console.log('Sending data:', dataToSend); // Debug log
+      const success = await onSave(dataToSend);
       if (success) {
-        onOpenChange(false)
+        onOpenChange(false);
       }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: error.message || 'Error al guardar el producto'
+      }));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
