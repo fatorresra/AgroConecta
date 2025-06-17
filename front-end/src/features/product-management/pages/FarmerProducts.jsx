@@ -29,14 +29,13 @@ export default function FarmerProductsPage() {
     clearSelectedProduct,
     clearError
   } = useProducts();
-
-  const handleEditProduct = (producto) => {
-    setSelectedProduct(producto);
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
     setModalEditarProducto(true);
   };
 
-  const handleDeleteProduct = (producto) => {
-    setSelectedProduct(producto);
+  const handleDeleteProduct = (product) => {
+    setSelectedProduct(product);
     setModalEliminarProducto(true);
   };
 

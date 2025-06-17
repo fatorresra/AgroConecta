@@ -26,15 +26,15 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="secondary" asChild>
-                <Link to="/registro?tipo=agricultor">Soy Agricultor</Link>
+                <Link to="/login">Soy Agricultor</Link>
               </Button>
               <Button
                 size="lg"
-                variant="outline"
+                variant="ghost"
                 className="text-white border-white hover:bg-white hover:text-green-600"
                 asChild
               >
-                <Link to="/registro?tipo=comprador">Soy Comprador</Link>
+                <Link to="/login">Soy Comprador</Link>
               </Button>
             </div>
           </div>
