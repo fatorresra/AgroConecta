@@ -82,53 +82,55 @@ export const useProductStore = create((set, get) => ({
   },
 
   updateProduct: async (id, productData) => {
-    // 1. Actualización optimista
+    // 1. Actualización optimista inmediata
     const originalProducts = get().products;
     const updatedProduct = {
       ...originalProducts.find(p => p.id === id),
       ...productData
     };
 
-    try {
-      // Actualizar inmediatamente en el estado
-      set(state => ({
-        products: state.products.map(p =>
-          p.id === id ? updatedProduct : p
-        ),
-        error: null
-      }));
+    // 2. Actualizar inmediatamente en el estado
+    set(state => ({
+      products: state.products.map(p =>
+        p.id === id ? updatedProduct : p
+      ),
+      error: null
+    }));
 
-      // 2. Intentar actualizar en el backend
-      const response = await productService.updateProduct(id, productData);
-      
-      if (response.success && response.product) {
-        // La actualización fue exitosa, actualizamos con los datos del servidor
-        console.log('Backend update successful:', response.product);
+    // 3. Retornar true inmediatamente para cerrar el modal
+    setTimeout(async () => {
+      try {
+        // 4. Intentar actualizar en el backend
+        const response = await productService.updateProduct(id, productData);
+        
+        if (response.success) {
+          // 5. Si es exitoso, actualizar la lista completa
+          const productsResponse = await productService.getMyProducts();
+          if (productsResponse.success) {
+            set({ 
+              products: productsResponse.products,
+              error: null
+            });
+          }
+        } else {
+          // 6. Si falló, revertir los cambios
+          console.error('Update failed:', response.message);
+          set(state => ({
+            products: originalProducts,
+            error: response.message
+          }));
+        }
+      } catch (error) {
+        // 7. En caso de error, revertir
+        console.error('Update error:', error);
         set(state => ({
-          products: state.products.map(p =>
-            p.id === id ? response.product : p
-          ),
-          error: null
+          products: originalProducts,
+          error: error.message
         }));
-        return true;
       }
+    }, 0);
 
-      // 3. Si falló, revertir los cambios y mostrar el error
-      console.error('Update failed:', response.message);
-      set(state => ({
-        products: originalProducts,
-        error: response.message
-      }));
-      return false;
-    } catch (error) {
-      // 4. En caso de error, revertir y mostrar el error
-      console.error('Update error:', error);
-      set(state => ({
-        products: originalProducts,
-        error: error.message
-      }));
-      return false;
-    }
+    return true;
   },
   deleteProduct: async (id) => {
     try {
