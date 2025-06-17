@@ -17,14 +17,17 @@ export default function HeroSection() {
             para productos frescos y de calidad.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-green-600 hover:bg-green-700" asChild>
-              <Link to="/registro">
+              <Link to="/register">
                 Comenzar Ahora
-                <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
+                <ArrowRight className="ml-2 h-5 w-5" />
+              
             </Button>
+            </div>
             <Button size="lg" variant="outline" asChild>
-              <Link to="/productos">Explorar Productos</Link>
+              <Link to="/products">Explorar Productos</Link>
             </Button>
           </div>
         </div>
