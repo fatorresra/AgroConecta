@@ -13,11 +13,11 @@ import '@/styles/globals.css'
 
 const router = createBrowserRouter([
   {
-    path: '/home',
+    path: '/',
     element: <LandingPage />,
   },
   {
-    path: '/',
+    path: '/home',
     element: <App />,
   },
   {
