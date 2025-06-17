@@ -5,29 +5,39 @@ export const useAuthStore = create(
   persist(
     (set) => ({
       token: null,
-      user: null,
-
-      login: async (credentials) => {
+      user: null,      login: async (credentials) => {
         const { email, password } = credentials;
         
-        // if (!email || !password) {
-        //   throw new Error('Email y contraseña son requeridos');
-        // }
+        try {
+          const response = await loginUser({ email, password });
+          
+          if (!response.success) {
+            throw new Error(response.message);
+          }
 
-        const response = await loginUser({ email, password });
-        
-        if (!response.success) {
-          throw new Error(response.message);
+          const { res } = response;
+
+          if (!res.token || !res.user || !res.user.role) {
+            throw new Error('Respuesta del servidor incompleta');
+          }
+
+          // Establecer el estado y esperar a que se complete
+          await new Promise(resolve => {
+            set({ 
+              token: res.token,
+              user: res.user
+            }, false, 'auth/login');
+            resolve();
+          });
+
+          console.log('Usuario autenticado:', res.user);
+          return { success: true, user: res.user };
+
+        } catch (error) {
+          console.error('Error en login:', error);
+          set({ token: null, user: null });
+          throw error;
         }
-
-        const {res } = response;
-
-        set({ 
-          token:res.token, // Asegúrate de que el token esté en la respuesta
-          user: res.user
-        });
-        console.log('Usuario autenticado:', res.user);
-        return true;
       },
 
       logout: () => {

@@ -7,29 +7,33 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { token, user, login: storeLogin, logout: storeLogout } = useAuthStore();
   const navigate = useNavigate();
-
   const handleLogin = async (credentials) => {
     try {
       setIsLoading(true);
       setError(null);
-      const success = await storeLogin(credentials);
+
+      // Esperar a que el login se complete y obtener el usuario
+      const { success, user: loggedUser } = await storeLogin(credentials);
        
-      if (success) {
-        // Determinar la ruta según el rol del usuario
-        // console.log(user.role);
-        // Redirect based on user role
-      const route = user.role === 'agricultor' 
-        ? '/farmer/products' 
-        : user.role === 'comprador' 
-          ? '/products' 
-          : '/home';
-      navigate(route);
+      if (success && loggedUser) {
+        console.log('Login successful, user:', loggedUser);
+        
+        // Usar el usuario devuelto por el login en lugar del estado
+        const route = loggedUser.role === 'agricultor' 
+          ? '/farmer/products' 
+          : loggedUser.role === 'comprador' 
+            ? '/products' 
+            : '/home';
+
+        console.log('Redirecting to:', route);
+        navigate(route);
         return { success: true };
       }
       
       setError('Credenciales inválidas');
       return { success: false, error: 'Credenciales inválidas' };
     } catch (error) {
+      console.error('Login error:', error);
       setError(error.message || 'Error al iniciar sesión');
       return { success: false, error: error.message };
     } finally {
