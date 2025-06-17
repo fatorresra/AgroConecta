@@ -17,8 +17,13 @@ export const useAuth = () => {
       if (success) {
         // Determinar la ruta según el rol del usuario
         // console.log(user.role);
-        const route = user.role === 'agricultor' ? '/farmer/products' : '/home';
-        navigate(route);
+        // Redirect based on user role
+      const route = user.role === 'agricultor' 
+        ? '/farmer/products' 
+        : user.role === 'comprador' 
+          ? '/products' 
+          : '/home';
+      navigate(route);
         return { success: true };
       }
       
