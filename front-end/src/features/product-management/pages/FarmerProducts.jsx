@@ -70,13 +70,8 @@ export default function FarmerProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
-        isAuthenticated={true}
-        userName="Juan Díaz"
         pageTitle="Panel de Agricultor"
         pageDescription="Gestiona tus productos y conecta con compradores"
-        showAuthButtons={false}
-        userType="farmer"
-        notificationCount={3}
       />
 
       <div className="container mx-auto px-4 py-8">

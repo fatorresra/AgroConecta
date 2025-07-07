@@ -2,17 +2,20 @@ import { Link } from "react-router-dom"
 import { Leaf, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { useAuthStore } from "@/features/authentication/store/AuthStore";
 import ThemeToggle from "@/shared/components/atoms/ThemeToggle"
 
 export default function Header({ 
-  isAuthenticated = false, 
-  userName = "", 
   pageTitle = "", 
   pageDescription = "",
   showAuthButtons = true,
-  userType = "",
   notificationCount = 0
 }) {
+  const { user, token, logout } = useAuthStore();
+  const isAuthenticated = Boolean(token);
+  const userName = user?.name || "";
+  const userType = user?.role || "";
+
   const renderAuthSection = () => {
     if (showAuthButtons && !isAuthenticated) {  
       return (
