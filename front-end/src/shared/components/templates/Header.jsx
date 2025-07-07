@@ -41,12 +41,25 @@ export default function Header({
               </Link>
             </Button>
           )} */}
+
+          {/* temporary products button, could add this to a user popover menu */}
+          {userType === "agricultor" && (
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/farmer/products">Mis Productos</Link>
+            </Button>
+          )}
+
           <Avatar>
             <AvatarImage src="/placeholder.svg?height=40&width=40" />
             <AvatarFallback>
               {userName.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
+
+          {/* temporary logout button */}
+          <Button variant="ghost" size="sm" onClick={logout} asChild>
+            <Link to="/">Cerrar Sesión</Link>
+          </Button>
         </div>
       )
     }
