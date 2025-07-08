@@ -11,7 +11,7 @@ export async function registerUser(formData) {
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || "Error al registrar usuario",
+      error: error.response?.data?.error || "Error al registrar usuario",
     };
   }
 }
@@ -29,7 +29,7 @@ export async function loginUser({ email, password }) {
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || "Error al iniciar sesión",
+      error: error.response?.data?.error || "Error al iniciar sesión",
     };
   }
 }

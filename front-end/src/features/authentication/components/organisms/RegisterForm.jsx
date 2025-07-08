@@ -1,7 +1,7 @@
-import { registerUser } from "../../services/AuthService"
+import { useAuth } from '../../hooks/useAuth'
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { User, Mail, Lock, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -13,7 +13,7 @@ import FarmerProfileFields from "../molecules/FarmerProfileFields"
 import ProductInterestSelector from "../molecules/ProductInterestSelector"
 
 export default function RegisterForm() {
-  const navigate = useNavigate()
+  const { register: registerHook } = useAuth()
   const { 
     register,
     handleSubmit,
@@ -25,25 +25,29 @@ export default function RegisterForm() {
 
   const role = watch("role") || ""
 
-  /** Register field manually since RoleSelector is a custom component */
+  // Register field manually since RoleSelector is a custom component
   useEffect(() => {
     register("role", { required: "Selecciona un rol" })
   }, [register])
 
   const onSubmit = async (data) => {
-    // Remove confirmPassword from data
-    const { confirmPassword: _confirmPassword, ...formData } = data
+    // Remove password_confirm from form data
+    const { password_confirm: _password_confirm, ...formData } = data;
     
-    // TO DO: Success message and better error message handling
-    try {
-      const response = await registerUser(formData)
-      navigate("/login")
-      console.log(response)
-    } catch (error) {
-      setError("api", {
-        type: "manual",
-        message: error.response?.data?.message || "Error al crear la cuenta",
-      })
+    const result = await registerHook(formData);
+    if (!result.success) {
+      // Specific email error handling
+      if (result.error === 'User already exists with this email.') {
+        setError('email', {
+          type: 'manual',
+          message: 'Este correo electrónico ya está en uso',
+        }, { shouldFocus: true });
+      } else {
+        setError('api', {
+          type: 'manual',
+          message: result.error,
+        });
+      }
     }
   }
 
