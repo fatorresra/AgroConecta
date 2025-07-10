@@ -45,25 +45,8 @@ const transformProduct = (product) => {
     visits: Number(product.visits || 0)
   };
 };
+
 export const productService = {
-  getProducts: async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/products`);
-      const products = response.data.map(transformProduct);
-      // console.log("Productos actuales:", products);
-      return { 
-        success: true, 
-        products
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Error al obtener productos",
-      };
-    }
-  },
-
-
   getMyProducts: async () => {
     try {
       const { headers } = getAuthHeader();
@@ -98,8 +81,6 @@ export const productService = {
     }
   },
 
-
-
   createProduct: async (productData) => {
     try {
       const config = getAuthHeader();
@@ -130,6 +111,7 @@ export const productService = {
       };
     }
   },
+
   updateProduct: async (id, productData) => {
     try {
       // Asegurarse de que solo enviamos los campos que han cambiado
@@ -186,6 +168,7 @@ export const productService = {
       };
     }
   },
+
   deleteProduct: async (id) => {
     try {
       const { headers } = getAuthHeader();
