@@ -37,8 +37,8 @@ export default function ProductFilters({
           </SelectTrigger>
           <SelectContent>
             {categorias.map((categoria) => (
-              <SelectItem key={categoria} value={categoria}>
-                {categoria}
+              <SelectItem key={categoria.value} value={categoria.value}>
+                {categoria.label}
               </SelectItem>
             ))}
           </SelectContent>

@@ -1,12 +1,9 @@
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-
-const tiposProductos = [
-  "Frutas", "Verduras", "Hortalizas", "Granos", "Café", "Cacao",
-  "Tubérculos", "Cereales", "Legumbres", "Hierbas aromáticas"
-]
+import { productTypes } from "@/shared/utils/options/productTypes"
 
 export default function ProductInterestSelector({ selectedProducts, onProductChange }) {
+  const tiposProductos = productTypes.map(opt => opt.plural || opt.label)
   return (
     <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
       <h3 className="font-medium text-blue-800">Información de Comprador</h3>

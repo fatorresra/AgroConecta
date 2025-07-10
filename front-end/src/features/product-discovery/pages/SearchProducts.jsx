@@ -11,7 +11,10 @@ import Header from "@/shared/components/templates/Header"
 import Footer from "@/shared/components/templates/Footer"
 import ProductGrid from "../components/organisms/ProductGrid"
 import ProductFilters from "../components/organisms/ProductFilters"
+import { productTypes } from "@/shared/utils/options/productTypes"
+// import { useProductSearch } from "../hooks/useProductSearch"
 
+// Replace with API call
 const productos = [
   {
     id: 1,
@@ -99,13 +102,21 @@ const productos = [
   },
 ]
 
-const categorias = ["Todas", "Frutas", "Verduras", "Café", "Cacao", "Tubérculos", "Granos", "Hierbas"]
+const categorias = [
+  { value: "all", label: "Todas" },
+  ...productTypes.map(opt => ({ value: opt.value, label: opt.plural || opt.label }))
+]
+
+// TO DO: Fields not used in product database
 const departamentos = ["Todos", "Antioquia", "Boyacá", "Córdoba", "Huila", "Quindío", "Santander"]
 const certificaciones = ["Todas", "Orgánico", "Fair Trade", "Convencional"]
 
 export default function SearchProductsPage() {
+  // TO DO: Error handling UI
+  // const { products, isLoading, error } = useProductSearch()
+
   const [busqueda, setBusqueda] = useState("")
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas")
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("all")
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState("Todos")
   const [certificacionSeleccionada, setCertificacionSeleccionada] = useState("Todas")
   const [rangoPrecios, setRangoPrecios] = useState([0, 20000])
@@ -144,7 +155,7 @@ export default function SearchProductsPage() {
     const coincideBusqueda =
       producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       producto.agricultor.toLowerCase().includes(busqueda.toLowerCase())
-    const coincideCategoria = categoriaSeleccionada === "Todas" || producto.categoria === categoriaSeleccionada
+    const coincideCategoria = categoriaSeleccionada === "all" || producto.categoria === categoriaSeleccionada
     const coincideDepartamento =
       departamentoSeleccionado === "Todos" || producto.ubicacion.includes(departamentoSeleccionado)
     const coincideCertificacion =
@@ -270,7 +281,7 @@ export default function SearchProductsPage() {
                   variant="outline"
                   onClick={() => {
                     setBusqueda("")
-                    setCategoriaSeleccionada("Todas")
+                    setCategoriaSeleccionada("all")
                     setDepartamentoSeleccionado("Todos")
                     setCertificacionSeleccionada("Todas")
                     setRangoPrecios([0, 20000])

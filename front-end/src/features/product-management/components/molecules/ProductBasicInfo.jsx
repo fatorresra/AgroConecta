@@ -1,19 +1,12 @@
 import ProductInput from "../atoms/ProductInput"
 import ProductSelect from "../atoms/ProductSelect"
+import { productTypes } from "@/shared/utils/options/productTypes"
 
 export default function ProductBasicInfo({ 
   producto, 
   onChange,
   errors = {}
 }) {
-  const typeOptions = [
-    { value: "Vegetal", label: "Vegetal" },
-    { value: "Fruta", label: "Fruta" },
-    { value: "Grano", label: "Grano" },
-    { value: "Tubérculo", label: "Tubérculo" },
-    { value: "Café", label: "Café" },
-    { value: "Cacao", label: "Cacao" }
-  ]
   return (
     <div className="grid grid-cols-2 gap-4">
       <ProductInput 
@@ -28,7 +21,7 @@ export default function ProductBasicInfo({
       <ProductSelect
         id="type"
         label="Tipo de Producto"
-        options={typeOptions}
+        options={productTypes}
         defaultValue={producto?.type}
         onChange={(value) => onChange("type", value)}
         placeholder="Selecciona tipo"
