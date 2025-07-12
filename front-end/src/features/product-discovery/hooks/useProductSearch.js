@@ -1,32 +1,34 @@
 import { useEffect } from 'react';
 import { useProductSearchStore } from '../store/productSearchStore';
 
-export const useProductSearch = (fetchOnMount = true) => {
+export const useProductSearch = (productId) => {
   const {
     products,
+    selectedProduct,
     isLoading,
     error,
     fetchProducts,
     fetchProductById,
-    selectedProduct,
     clearError,
     clearSelectedProduct
   } = useProductSearchStore();
 
   useEffect(() => {
-    if (fetchOnMount) {
+    if (productId) {
+      fetchProductById(productId);
+    } else {
       fetchProducts();
     }
     // eslint-disable-next-line
-  }, [fetchOnMount]);
+  }, []);
 
   return {
     products,
+    selectedProduct,
     isLoading,
     error,
     fetchProducts,
     fetchProductById,
-    selectedProduct,
     clearError,
     clearSelectedProduct
   };
