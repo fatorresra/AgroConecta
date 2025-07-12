@@ -30,12 +30,28 @@ export default function SearchProductsPage() {
   }
   
   const [filters, setFilters] = useState(getDefaultFilters());
-  const [ordenarPor, setOrdenarPor] = useState("relevancia")
+  const [sortBy, setSortBy] = useState("disponibilidad");
 
   // Update a filter by name
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({ ...prev, [filterName]: value }))
   }
+
+  const sortedProducts = [...products].sort((a, b) => {
+    switch (sortBy) {
+      case "disponibilidad":
+        return (b.quantity || 0) - (a.quantity || 0);
+      case "precio-menor":
+        return (a.price_per_unit || 0) - (b.price_per_unit || 0);
+      case "precio-mayor":
+        return (b.price_per_unit || 0) - (a.price_per_unit || 0);
+      case "recientes":
+        return 0;
+        // return new Date(b.harvest_date) - new Date(a.harvest_date);
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,16 +79,16 @@ export default function SearchProductsPage() {
               />
             </div>
             <div className="flex gap-3">
-              <Select value={ordenarPor} onValueChange={setOrdenarPor}>
+              <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="relevancia">Más Relevantes</SelectItem>
+                  <SelectItem value="disponibilidad">Mayor Disponibilidad</SelectItem>
                   <SelectItem value="precio-menor">Precio: Menor a Mayor</SelectItem>
                   <SelectItem value="precio-mayor">Precio: Mayor a Menor</SelectItem>
-                  <SelectItem value="rating">Mejor Calificados</SelectItem>
                   <SelectItem value="recientes">Más Recientes</SelectItem>
+                  {/* <SelectItem value="rating">Mejor Calificados</SelectItem> */}
                 </SelectContent>
               </Select>
 
@@ -128,8 +144,8 @@ export default function SearchProductsPage() {
               <p className="text-gray-600">{products.length} productos encontrados</p>
             </div>
 
-            {products.length > 0 ? (
-              <ProductGrid products={products} />
+            {sortedProducts.length > 0 ? (
+              <ProductGrid products={sortedProducts} />
             ) : (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
@@ -147,7 +163,7 @@ export default function SearchProductsPage() {
             )}
 
             {/* Paginación */}
-            {products.length > 0 && (
+            {/* {products.length > 0 && (
               <div className="flex justify-center mt-8">
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" disabled>
@@ -161,7 +177,7 @@ export default function SearchProductsPage() {
                   <Button variant="outline">Siguiente</Button>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
