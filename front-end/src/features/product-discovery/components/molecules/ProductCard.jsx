@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom"
-import { MapPin, Star } from "lucide-react"
+import { MapPin, Star, Calendar } from "lucide-react"
 // import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
+import { productTypes } from "@/shared/utils/options/productTypes"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -25,37 +26,54 @@ export default function ProductCard({ product }) {
           height={200}
           className="w-full h-48 object-cover"
         /> */}
-        {product.harvest && (
+        {product.type && (
           <Badge className="absolute top-2 right-2 bg-green-600">
-            {product.harvest}
+            {(
+              productTypes.find(pt => pt.value === product.type)?.label
+              || product.type
+            )}
           </Badge>
         )}
       </div>
       <CardHeader>
         <CardTitle className="text-lg">{product.name || product.nombre}</CardTitle>
         <CardDescription className="flex items-center gap-1">
-          <MapPin className="h-4 w-4" />
-          {product.location || product.ubicacion}
+          {/* Product department/city is not saved yet */}
+          {/* <MapPin className="h-4 w-4" />
+          {product.location || product.ubicacion} */}
+          <Calendar className="h-4 w-4" />
+          {product.harvest_date && (
+            "Cosecha: " + new Date(product.harvest_date).toLocaleDateString('es-CO')
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-2xl font-bold text-green-600">
-            ${(product.price || product.price_per_unit).toLocaleString()}
+          <span className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-green-600">
+              ${(product.price || product.price_per_unit).toLocaleString()}
+            </span>
+            <span className="text-xs text-gray-500">COP</span>
           </span>
-          <span className="text-gray-500">/{product.unit || product.unidad}</span>
+          <span className="text-gray-500">/{product.unit || "unidad"}</span>
         </div>
+        <span className="block text-xs text-gray-500 mb-2">
+          Cantidad en stock: {product.quantity}
+        </span>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">
+          {/* Could use farm_id to fetch owner name */}
+          {/* <span className="text-sm text-gray-600">
             Por: {product.farmer || product.agricultor}
-          </span>
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm">{product.rating}</span>
-          </div>
+          </span> */}
+          {product.rating && (
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span className="text-sm">{product.rating}</span>
+            </div>
+          )}
         </div>
         <Button className="w-full mt-4 bg-green-600 hover:bg-green-700" asChild>
-          <Link to={`/productos/${product.id}`}>Ver Detalles</Link>
+          <Link to={`/products/${product.id}`}>Ver Detalles</Link>
         </Button>
       </CardContent>
     </Card>

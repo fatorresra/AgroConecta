@@ -30,7 +30,7 @@ export default function SearchProductsPage() {
   }
   
   const [filters, setFilters] = useState(getDefaultFilters());
-  const [sortBy, setSortBy] = useState("disponibilidad");
+  const [sortBy, setSortBy] = useState("recientes");
 
   // Update a filter by name
   const handleFilterChange = (filterName, value) => {
@@ -46,8 +46,7 @@ export default function SearchProductsPage() {
       case "precio-mayor":
         return (b.price_per_unit || 0) - (a.price_per_unit || 0);
       case "recientes":
-        return 0;
-        // return new Date(b.harvest_date) - new Date(a.harvest_date);
+        return new Date(b.harvest_date) - new Date(a.harvest_date);
       default:
         return 0;
     }
@@ -84,10 +83,10 @@ export default function SearchProductsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="recientes">Más Recientes</SelectItem>
                   <SelectItem value="disponibilidad">Mayor Disponibilidad</SelectItem>
                   <SelectItem value="precio-menor">Precio: Menor a Mayor</SelectItem>
                   <SelectItem value="precio-mayor">Precio: Mayor a Menor</SelectItem>
-                  <SelectItem value="recientes">Más Recientes</SelectItem>
                   {/* <SelectItem value="rating">Mejor Calificados</SelectItem> */}
                 </SelectContent>
               </Select>
