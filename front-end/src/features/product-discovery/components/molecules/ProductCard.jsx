@@ -41,7 +41,7 @@ export default function ProductCard({ product }) {
       <CardContent>
         <div className="flex items-center justify-between mb-2">
           <span className="text-2xl font-bold text-green-600">
-            ${(product.price || product.precio).toLocaleString()}
+            ${(product.price || product.price_per_unit).toLocaleString()}
           </span>
           <span className="text-gray-500">/{product.unit || product.unidad}</span>
         </div>

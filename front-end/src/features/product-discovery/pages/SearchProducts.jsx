@@ -12,95 +12,7 @@ import Footer from "@/shared/components/templates/Footer"
 import ProductGrid from "../components/organisms/ProductGrid"
 import ProductFilters from "../components/organisms/ProductFilters"
 import { productTypes } from "@/shared/utils/options/productTypes"
-// import { useProductSearch } from "../hooks/useProductSearch"
-
-// Replace with API call
-const productos = [
-  {
-    id: 1,
-    nombre: "Café Orgánico Premium",
-    agricultor: "María González",
-    ubicacion: "Huila, Colombia",
-    precio: 15000,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=200&width=300",
-    rating: 4.8,
-    cosecha: "Diciembre 2024",
-    categoria: "Café",
-    certificacion: "Orgánico",
-    disponible: 500,
-  },
-  {
-    id: 2,
-    nombre: "Aguacate Hass",
-    agricultor: "Carlos Rodríguez",
-    ubicacion: "Antioquia, Colombia",
-    precio: 3500,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=200&width=300",
-    rating: 4.9,
-    cosecha: "Enero 2025",
-    categoria: "Frutas",
-    certificacion: "Convencional",
-    disponible: 200,
-  },
-  {
-    id: 3,
-    nombre: "Plátano Hartón",
-    agricultor: "Ana Martínez",
-    ubicacion: "Quindío, Colombia",
-    precio: 2200,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=200&width=300",
-    rating: 4.7,
-    cosecha: "Todo el año",
-    categoria: "Frutas",
-    certificacion: "Convencional",
-    disponible: 1000,
-  },
-  {
-    id: 4,
-    nombre: "Tomate Chonto",
-    agricultor: "Luis Herrera",
-    ubicacion: "Boyacá, Colombia",
-    precio: 2800,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=200&width=300",
-    rating: 4.6,
-    cosecha: "Febrero 2025",
-    categoria: "Verduras",
-    certificacion: "Orgánico",
-    disponible: 300,
-  },
-  {
-    id: 5,
-    nombre: "Cacao Fino",
-    agricultor: "Pedro Sánchez",
-    ubicacion: "Santander, Colombia",
-    precio: 8500,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=200&width=300",
-    rating: 4.9,
-    cosecha: "Marzo 2025",
-    categoria: "Cacao",
-    certificacion: "Fair Trade",
-    disponible: 150,
-  },
-  {
-    id: 6,
-    nombre: "Yuca Amarilla",
-    agricultor: "Carmen Díaz",
-    ubicacion: "Córdoba, Colombia",
-    precio: 1800,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=200&width=300",
-    rating: 4.5,
-    cosecha: "Enero 2025",
-    categoria: "Tubérculos",
-    certificacion: "Convencional",
-    disponible: 800,
-  },
-]
+import { useProductSearch } from "../hooks/useProductSearch"
 
 const categorias = [
   { value: "all", label: "Todas" },
@@ -112,66 +24,23 @@ const departamentos = ["Todos", "Antioquia", "Boyacá", "Córdoba", "Huila", "Qu
 const certificaciones = ["Todas", "Orgánico", "Fair Trade", "Convencional"]
 
 export default function SearchProductsPage() {
-  // TO DO: Error handling UI
-  // const { products, isLoading, error } = useProductSearch()
+  const { products, isLoading, error } = useProductSearch()
 
-  const [busqueda, setBusqueda] = useState("")
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("all")
-  const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState("Todos")
-  const [certificacionSeleccionada, setCertificacionSeleccionada] = useState("Todas")
-  const [rangoPrecios, setRangoPrecios] = useState([0, 20000])
-  const [soloOrganicos, setSoloOrganicos] = useState(false)
+  const [filters, setFilters] = useState({
+    // Temporary keeping for compatibility
+    categoriaSeleccionada: "all",
+    departamentoSeleccionado: "",
+    certificacionSeleccionada: "",
+    rangoPrecios: [0, 20000],
+    soloOrganicos: false,
+  })
   const [ordenarPor, setOrdenarPor] = useState("relevancia")
 
-  const filters = {
-    categoriaSeleccionada,
-    departamentoSeleccionado,
-    certificacionSeleccionada,
-    rangoPrecios,
-    soloOrganicos,
-  }
-
+  // Update a filter by name
   const handleFilterChange = (filterName, value) => {
-    switch (filterName) {
-      case "categoriaSeleccionada":
-        setCategoriaSeleccionada(value)
-        break
-      case "departamentoSeleccionado":
-        setDepartamentoSeleccionado(value)
-        break
-      case "certificacionSeleccionada":
-        setCertificacionSeleccionada(value)
-        break
-      case "rangoPrecios":
-        setRangoPrecios(value)
-        break
-      case "soloOrganicos":
-        setSoloOrganicos(value)
-        break
-    }
+    setFilters(prev => ({ ...prev, [filterName]: value }))
   }
 
-  const productosFiltrados = productos.filter((producto) => {
-    const coincideBusqueda =
-      producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      producto.agricultor.toLowerCase().includes(busqueda.toLowerCase())
-    const coincideCategoria = categoriaSeleccionada === "all" || producto.categoria === categoriaSeleccionada
-    const coincideDepartamento =
-      departamentoSeleccionado === "Todos" || producto.ubicacion.includes(departamentoSeleccionado)
-    const coincideCertificacion =
-      certificacionSeleccionada === "Todas" || producto.certificacion === certificacionSeleccionada
-    const coincidePrecio = producto.precio >= rangoPrecios[0] && producto.precio <= rangoPrecios[1]
-    const coincideOrganico = !soloOrganicos || producto.certificacion === "Orgánico"
-
-    return (
-      coincideBusqueda &&
-      coincideCategoria &&
-      coincideDepartamento &&
-      coincideCertificacion &&
-      coincidePrecio &&
-      coincideOrganico
-    )
-  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -194,8 +63,8 @@ export default function SearchProductsPage() {
               <Input
                 placeholder="Buscar productos, agricultores..."
                 className="pl-10"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                value={name}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               />
             </div>
             <div className="flex gap-3">
@@ -265,11 +134,11 @@ export default function SearchProductsPage() {
           {/* Lista de productos */}
           <div className="lg:col-span-3">
             <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">{productosFiltrados.length} productos encontrados</p>
+              <p className="text-gray-600">{products.length} productos encontrados</p>
             </div>
 
-            {productosFiltrados.length > 0 ? (
-              <ProductGrid products={productosFiltrados} />
+            {products.length > 0 ? (
+              <ProductGrid products={products} />
             ) : (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
@@ -294,7 +163,7 @@ export default function SearchProductsPage() {
             )}
 
             {/* Paginación */}
-            {productosFiltrados.length > 0 && (
+            {products.length > 0 && (
               <div className="flex justify-center mt-8">
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" disabled>
