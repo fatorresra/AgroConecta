@@ -12,35 +12,30 @@ import Footer from "@/shared/components/templates/Footer"
 import ProductGrid from "../components/organisms/ProductGrid"
 import ProductFilters from "../components/organisms/ProductFilters"
 import { productTypes } from "@/shared/utils/options/productTypes"
+import { PRODUCT_FILTERS } from "@/shared/utils/options/productFilters"
 import { useProductSearch } from "../hooks/useProductSearch"
 
-const categorias = [
+const typeOptions = [
   { value: "all", label: "Todas" },
   ...productTypes.map(opt => ({ value: opt.value, label: opt.plural || opt.label }))
 ]
 
-// TO DO: Fields not used in product database
-const departamentos = ["Todos", "Antioquia", "Boyacá", "Córdoba", "Huila", "Quindío", "Santander"]
-const certificaciones = ["Todas", "Orgánico", "Fair Trade", "Convencional"]
-
 export default function SearchProductsPage() {
   const { products, isLoading, error } = useProductSearch()
 
-  const [filters, setFilters] = useState({
-    // Temporary keeping for compatibility
-    categoriaSeleccionada: "all",
-    departamentoSeleccionado: "",
-    certificacionSeleccionada: "",
-    rangoPrecios: [0, 20000],
-    soloOrganicos: false,
-  })
+  const getDefaultFilters = () => {
+    return Object.fromEntries(
+      Object.entries(PRODUCT_FILTERS).map(([key, config]) => [key, config.default])
+    );
+  }
+  
+  const [filters, setFilters] = useState(getDefaultFilters());
   const [ordenarPor, setOrdenarPor] = useState("relevancia")
 
   // Update a filter by name
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({ ...prev, [filterName]: value }))
   }
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,8 +58,8 @@ export default function SearchProductsPage() {
               <Input
                 placeholder="Buscar productos, agricultores..."
                 className="pl-10"
-                value={name}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                value={filters.name}
+                onChange={e => handleFilterChange("name", e.target.value)}
               />
             </div>
             <div className="flex gap-3">
@@ -96,9 +91,7 @@ export default function SearchProductsPage() {
                   </SheetHeader>
                   <div className="mt-6">
                     <ProductFilters
-                      categorias={categorias}
-                      departamentos={departamentos}
-                      certificaciones={certificaciones}
+                      typeOptions={typeOptions}
                       filters={filters}
                       onFilterChange={handleFilterChange}
                     />
@@ -121,9 +114,7 @@ export default function SearchProductsPage() {
               </CardHeader>
               <CardContent>
                 <ProductFilters
-                  categorias={categorias}
-                  departamentos={departamentos}
-                  certificaciones={certificaciones}
+                  typeOptions={typeOptions}
                   filters={filters}
                   onFilterChange={handleFilterChange}
                 />
@@ -148,14 +139,7 @@ export default function SearchProductsPage() {
                 <p className="text-gray-600 mb-4">Intenta ajustar tus filtros o términos de búsqueda</p>
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    setBusqueda("")
-                    setCategoriaSeleccionada("all")
-                    setDepartamentoSeleccionado("Todos")
-                    setCertificacionSeleccionada("Todas")
-                    setRangoPrecios([0, 20000])
-                    setSoloOrganicos(false)
-                  }}
+                  onClick={() => setFilters(getDefaultFilters())}
                 >
                   Limpiar Filtros
                 </Button>
