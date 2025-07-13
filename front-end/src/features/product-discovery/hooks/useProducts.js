@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { productDiscoveryService } from '../services/ProductDiscoveryService';
 
 export const useProducts = () => {
@@ -9,7 +9,7 @@ export const useProducts = () => {
   const [totalProducts, setTotalProducts] = useState(0);
 
   // Cargar productos iniciales
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -27,10 +27,10 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Cargar categorías
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       const response = await productDiscoveryService.getCategories();
       if (response.success) {
@@ -39,10 +39,10 @@ export const useProducts = () => {
     } catch (err) {
       console.error('Error loading categories:', err);
     }
-  };
+  }, []);
 
   // Buscar productos con filtros
-  const searchProducts = async (filters = {}) => {
+  const searchProducts = useCallback(async (filters = {}) => {
     setLoading(true);
     setError(null);
     
@@ -60,10 +60,10 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Obtener un producto por ID
-  const getProductById = async (productId) => {
+  const getProductById = useCallback(async (productId) => {
     setLoading(true);
     setError(null);
     
@@ -82,18 +82,18 @@ export const useProducts = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Limpiar errores
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
   // Cargar datos iniciales
   useEffect(() => {
     loadProducts();
     loadCategories();
-  }, []);
+  }, [loadProducts, loadCategories]);
 
   return {
     // Estado

@@ -99,6 +99,8 @@ export default function ProductDetailPage() {
     `Fecha de cosecha: ${product.cosecha}`,
   ];
 
+  const fallbackImageUrl = "https://img.freepik.com/foto-gratis/vacas-pastando-alrededor-granja_23-2150454914.jpg?semt=ais_hybrid&w=740";
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -118,7 +120,7 @@ export default function ProductDetailPage() {
           {/* Imagen del producto */}
           <div className="relative">
             <img
-              src={product.imagen}
+              src={product.imagen || fallbackImageUrl}
               alt={product.nombre}
               className="w-full rounded-lg shadow-lg object-cover"
             />
