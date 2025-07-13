@@ -1,48 +1,119 @@
-import { useParams } from "react-router-dom"
-import { MapPin, Star, MessageSquare, Package, Calendar, Award } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { MapPin, Star, MessageSquare, Package, Calendar, Award, ArrowLeft, AlertCircle } from "lucide-react"
 import Header from "@/shared/components/templates/Header"
 import Footer from "@/shared/components/templates/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useProductChat } from "@/features/messaging/hooks/useProductChat"
+import { useProducts } from "../hooks/useProducts"
 
 export default function ProductDetailPage() {
   const { id } = useParams()
-  const { loading, startChatWithProduct } = useProductChat();
+  const navigate = useNavigate()
+  const { loading: chatLoading, startChatWithProduct } = useProductChat();
+  const { getProductById } = useProducts();
+  
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // TODO: Replace with actual API call
-  const product = {
-    id: 1,
-    nombre: "Café Orgánico Premium",
-    agricultor: "María González",
-    ubicacion: "Huila, Colombia",
-    precio: 15000,
-    unidad: "kg",
-    imagen: "/placeholder.svg?height=400&width=600",
-    rating: 4.8,
-    cosecha: "Diciembre 2024",
-    categoria: "Café",
-    certificacion: "Orgánico",
-    disponible: 500,
-    descripcion: "Café arábico de altura, cultivado bajo sombra a más de 1,700 metros sobre el nivel del mar. Notas a chocolate y frutos rojos.",
-    caracteristicas: [
-      "Variedad: Caturra y Castillo",
-      "Proceso: Lavado",
-      "Altura: 1,700 - 2,000 msnm",
-      "Tostado: Medio",
-    ]
-  }
+  // Cargar producto por ID
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const productData = await getProductById(id);
+        if (productData) {
+          setProduct(productData);
+        } else {
+          setError('Producto no encontrado');
+        }
+      } catch (err) {
+        setError('Error al cargar el producto');
+        console.error('Error loading product:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id, getProductById]);
 
   const handleChatClick = async () => {
-    await startChatWithProduct(product);
+    if (product) {
+      await startChatWithProduct(product);
+    }
   };
+
+  // Estado de carga
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Estado de error
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              {error || 'Producto no encontrado'}
+            </AlertDescription>
+          </Alert>
+          <div className="text-center">
+            <Button onClick={() => navigate('/products')} className="bg-green-600 hover:bg-green-700">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver a productos
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Preparar características dinámicas
+  const caracteristicas = [
+    `Tipo: ${product.categoria}`,
+    `Cantidad disponible: ${product.disponible} ${product.unidad}`,
+    `Precio por unidad: $${product.precio.toLocaleString()}`,
+    `Fecha de cosecha: ${product.cosecha}`,
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
       <main className="container mx-auto px-4 py-8">
+        {/* Botón de regreso */}
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/products')}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Volver a productos
+        </Button>
+
         <div className="grid md:grid-cols-2 gap-8">
           {/* Imagen del producto */}
           <div className="relative">
@@ -78,7 +149,7 @@ export default function ProductDetailPage() {
               </div>
               <div className="flex items-center gap-1">
                 <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                <span className="text-lg font-semibold">{product.rating}</span>
+                <span className="text-lg font-semibold">{product.rating.toFixed(1)}</span>
               </div>
             </div>
 
@@ -105,6 +176,13 @@ export default function ProductDetailPage() {
                     <p className="font-medium">{product.certificacion}</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-500">Categoría</p>
+                    <p className="font-medium">{product.categoria}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -116,8 +194,8 @@ export default function ProductDetailPage() {
             <div>
               <h2 className="text-xl font-semibold mb-2">Características</h2>
               <ul className="list-disc list-inside space-y-1 text-gray-600">
-                {product.caracteristicas.map((caracteristica) => (
-                  <li key={caracteristica}>{caracteristica}</li>
+                {caracteristicas.map((caracteristica, index) => (
+                  <li key={index}>{caracteristica}</li>
                 ))}
               </ul>
             </div>
@@ -131,10 +209,10 @@ export default function ProductDetailPage() {
                 variant="outline" 
                 className="flex gap-2"
                 onClick={handleChatClick}
-                disabled={loading}
+                disabled={chatLoading}
               >
                 <MessageSquare className="h-5 w-5" />
-                {loading ? 'Iniciando Chat...' : 'Chat'}
+                {chatLoading ? 'Iniciando Chat...' : 'Chat'}
               </Button>
             </div>
           </div>

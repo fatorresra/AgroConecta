@@ -35,6 +35,17 @@ export const useMessageStore = create((set, get) => ({
         socket.on('connect', () => {
           console.log('WebSocket conectado');
           set({ isConnected: true, socket });
+          
+          // Reunirse a todas las salas de chat activas
+          const { conversations, selectedConversation } = get();
+          conversations.forEach(conversation => {
+            socket.emit('join_chat', { chat_id: conversation.chatId });
+          });
+          
+          // Unirse a la conversación seleccionada si existe
+          if (selectedConversation) {
+            socket.emit('join_chat', { chat_id: selectedConversation.chatId });
+          }
         });
 
         socket.on('disconnect', () => {
@@ -42,19 +53,27 @@ export const useMessageStore = create((set, get) => ({
           set({ isConnected: false });
         });
 
+        socket.on('authenticated', (data) => {
+          console.log('Usuario autenticado:', data);
+        });
+
         socket.on('new_message', (message) => {
           console.log('Nuevo mensaje recibido:', message);
           get().handleNewMessage(message);
         });
 
-        socket.on('message_updated', (message) => {
-          console.log('Mensaje actualizado:', message);
-          get().handleMessageUpdate(message);
+        socket.on('message_status_updated', (data) => {
+          console.log('Estado de mensaje actualizado:', data);
+          get().handleMessageStatusUpdate(data);
+        });
+
+        socket.on('joined_chat', (data) => {
+          console.log('Unido al chat:', data.chat_id);
         });
 
         socket.on('error', (error) => {
           console.error('Error de WebSocket:', error);
-          set({ error: error.message });
+          set({ error: error.message || 'Error de conexión' });
         });
 
         set({ socket });
@@ -69,17 +88,55 @@ export const useMessageStore = create((set, get) => ({
   handleNewMessage: (message) => {
     const chatId = message.chat_id;
     const currentMessages = get().messages[chatId] || [];
+    const { user } = useAuthStore.getState();
+    
+    // Verificar que no sea un mensaje duplicado (por ID real)
+    const messageExists = currentMessages.some(msg => 
+      msg.id === message.id && !msg.isTemp
+    );
+    if (messageExists) {
+      console.log('Mensaje duplicado ignorado:', message.id);
+      return;
+    }
     
     // Convertir mensaje del backend al formato frontend
     const frontendMessage = {
       id: message.id,
       texto: message.content,
       fecha: new Date(message.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      enviado: message.sender_id === useAuthStore.getState().user?.id,
+      enviado: message.sender_id === user?.id,
       leido: message.status === 'read',
-      tipo: message.type
+      tipo: message.type || 'texto',
+      isTemp: false
     };
 
+    // Si es un mensaje que envié yo, buscar el mensaje temporal correspondiente para reemplazarlo
+    if (frontendMessage.enviado) {
+      const tempMessageIndex = currentMessages.findIndex(msg => 
+        msg.isTemp && 
+        msg.texto === message.content && 
+        msg.enviado === true &&
+        msg.tempId // Tiene tempId guardado
+      );
+      
+      if (tempMessageIndex !== -1) {
+        // Reemplazar el mensaje temporal con el real
+        const updatedMessages = [...currentMessages];
+        updatedMessages[tempMessageIndex] = frontendMessage;
+        
+        set(state => ({
+          messages: {
+            ...state.messages,
+            [chatId]: updatedMessages
+          }
+        }));
+        
+        console.log('Mensaje temporal reemplazado con el real:', message.id);
+        return;
+      }
+    }
+
+    // Si no es un reemplazo de mensaje temporal, agregar normalmente
     set(state => ({
       messages: {
         ...state.messages,
@@ -87,41 +144,53 @@ export const useMessageStore = create((set, get) => ({
       }
     }));
 
-    // Actualizar último mensaje en la conversación
-    set(state => ({
-      conversations: state.conversations.map(conv =>
-        conv.chatId === chatId
-          ? {
-              ...conv,
-              ultimoMensaje: {
-                texto: message.content,
-                fecha: frontendMessage.fecha,
-                leido: false,
-                enviado: frontendMessage.enviado,
+    // Actualizar último mensaje en la conversación solo si no es mi propio mensaje
+    // (para mis mensajes ya se actualizó en sendMessage)
+    if (!frontendMessage.enviado) {
+      set(state => ({
+        conversations: state.conversations.map(conv =>
+          conv.chatId === chatId
+            ? {
+                ...conv,
+                ultimoMensaje: {
+                  texto: message.content,
+                  fecha: frontendMessage.fecha,
+                  leido: false,
+                  enviado: false,
+                },
+                noLeidos: (conv.noLeidos || 0) + 1
               }
-            }
-          : conv
-      )
-    }));
+            : conv
+        )
+      }));
+    }
   },
 
-  // Manejar actualización de mensaje
-  handleMessageUpdate: (message) => {
-    const chatId = message.chat_id;
-    const messages = get().messages[chatId] || [];
+  // Manejar actualización de estado de mensaje
+  handleMessageStatusUpdate: (data) => {
+    const { message_id, status } = data;
+    const { messages } = get();
     
-    const updatedMessages = messages.map(msg =>
-      msg.id === message.id
-        ? { ...msg, leido: message.status === 'read' }
-        : msg
-    );
-
-    set(state => ({
-      messages: {
-        ...state.messages,
-        [chatId]: updatedMessages
+    // Buscar en qué chat está el mensaje
+    Object.keys(messages).forEach(chatId => {
+      const chatMessages = messages[chatId];
+      const messageIndex = chatMessages.findIndex(msg => msg.id === message_id);
+      
+      if (messageIndex !== -1) {
+        const updatedMessages = [...chatMessages];
+        updatedMessages[messageIndex] = {
+          ...updatedMessages[messageIndex],
+          leido: status === 'read'
+        };
+        
+        set(state => ({
+          messages: {
+            ...state.messages,
+            [chatId]: updatedMessages
+          }
+        }));
       }
-    }));
+    });
   },
 
   // Cargar conversaciones del usuario
@@ -159,6 +228,14 @@ export const useMessageStore = create((set, get) => ({
       }));
 
       set({ conversations, isLoading: false });
+      
+      // Unirse a todas las salas de chat si el socket está conectado
+      const { socket } = get();
+      if (socket && socket.connected) {
+        conversations.forEach(conversation => {
+          socket.emit('join_chat', { chat_id: conversation.chatId });
+        });
+      }
     } catch (error) {
       console.error('Error loading conversations:', error);
       set({ error: error.message, isLoading: false });
@@ -172,7 +249,16 @@ export const useMessageStore = create((set, get) => ({
 
   // Acciones para conversaciones
   setSelectedConversation: (conversation) => {
+    const { socket } = get();
+    
     set({ selectedConversation: conversation });
+    
+    // Unirse al chat si el socket está conectado
+    if (socket && socket.connected && conversation) {
+      socket.emit('join_chat', { chat_id: conversation.chatId });
+      console.log('Uniéndose al chat:', conversation.chatId);
+    }
+    
     // Cargar mensajes si no están cargados
     if (conversation && !get().messages[conversation.chatId]) {
       get().loadMessages(conversation.chatId);
@@ -224,48 +310,133 @@ export const useMessageStore = create((set, get) => ({
     const { user } = useAuthStore.getState();
     if (!user) return;
 
+    // Crear mensaje temporal para mostrar inmediatamente (UI optimista)
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const tempMessage = {
+      id: tempId,
+      texto: text,
+      fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      enviado: true,
+      leido: false,
+      tipo: "texto",
+      isTemp: true, // Marcar como temporal
+      sending: true // Marcar como enviándose
+    };
+
+    // Agregar mensaje temporal inmediatamente
+    set(state => ({
+      messages: {
+        ...state.messages,
+        [conversationId]: [
+          ...(state.messages[conversationId] || []),
+          tempMessage
+        ]
+      }
+    }));
+
+    // Actualizar último mensaje en la conversación
+    set(state => ({
+      conversations: state.conversations.map(conv =>
+        conv.chatId === conversationId
+          ? {
+              ...conv,
+              ultimoMensaje: {
+                texto: text,
+                fecha: tempMessage.fecha,
+                leido: false,
+                enviado: true,
+              }
+            }
+          : conv
+      )
+    }));
+
     try {
       const message = await chatService.sendMessage(conversationId, user.id, text);
       
-      // El mensaje se agregará automáticamente via WebSocket
-      // Pero por si acaso, lo agregamos localmente también
-      const newMessage = {
-        id: message.id,
-        texto: text,
-        fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        enviado: true,
-        leido: false,
-        tipo: "texto",
-      };
-
+      // Marcar el mensaje temporal como enviado exitosamente
       set(state => ({
         messages: {
           ...state.messages,
-          [conversationId]: [
-            ...(state.messages[conversationId] || []),
-            newMessage
-          ]
+          [conversationId]: (state.messages[conversationId] || []).map(msg =>
+            msg.id === tempId
+              ? { ...msg, sending: false, tempId: tempId } // Guardar tempId para poder reemplazarlo después
+              : msg
+          )
         }
       }));
 
-      // Actualizar último mensaje en la conversación
-      set(state => ({
-        conversations: state.conversations.map(conv =>
-          conv.chatId === conversationId
-            ? {
-                ...conv,
-                ultimoMensaje: {
-                  texto: text,
-                  fecha: newMessage.fecha,
-                  leido: false,
-                  enviado: true,
-                }
-              }
-            : conv
-        )
-      }));
     } catch (error) {
       console.error('Error sending message:', error);
+      
+      // Marcar el mensaje temporal como fallido
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [conversationId]: (state.messages[conversationId] || []).map(msg =>
+            msg.id === tempId
+              ? { ...msg, sending: false, failed: true }
+              : msg
+          )
+        }
+      }));
+      
+      set({ error: error.message });
+    }
+  },
+
+  // Reenviar mensaje fallido
+  retryMessage: async (conversationId, messageId) => {
+    const { user } = useAuthStore.getState();
+    if (!user) return;
+
+    const currentMessages = get().messages[conversationId] || [];
+    const messageToRetry = currentMessages.find(msg => msg.id === messageId);
+    
+    if (!messageToRetry || !messageToRetry.failed) return;
+
+    // Marcar como enviándose de nuevo
+    set(state => ({
+      messages: {
+        ...state.messages,
+        [conversationId]: (state.messages[conversationId] || []).map(msg =>
+          msg.id === messageId
+            ? { ...msg, sending: true, failed: false }
+            : msg
+        )
+      }
+    }));
+
+    try {
+      const message = await chatService.sendMessage(conversationId, user.id, messageToRetry.texto);
+      
+      // Marcar como enviado exitosamente
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [conversationId]: (state.messages[conversationId] || []).map(msg =>
+            msg.id === messageId
+              ? { ...msg, sending: false, tempId: messageId }
+              : msg
+          )
+        }
+      }));
+
+    } catch (error) {
+      console.error('Error retrying message:', error);
+      
+      // Marcar como fallido de nuevo
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [conversationId]: (state.messages[conversationId] || []).map(msg =>
+            msg.id === messageId
+              ? { ...msg, sending: false, failed: true }
+              : msg
+          )
+        }
+      }));
+      
       set({ error: error.message });
     }
   },

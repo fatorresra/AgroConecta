@@ -12,6 +12,7 @@ export const useMessages = () => {
     searchConversations,
     loadMessages,
     sendMessage,
+    retryMessage,
     getMessagesForConversation,
     loadConversations,
     initializeWebSocket,
@@ -37,6 +38,11 @@ export const useMessages = () => {
     sendMessage: (text) => {
       if (selectedConversation) {
         sendMessage(selectedConversation.chatId || selectedConversation.id, text);
+      }
+    },
+    retryMessage: (messageId) => {
+      if (selectedConversation) {
+        retryMessage(selectedConversation.chatId || selectedConversation.id, messageId);
       }
     },
     loadConversations,

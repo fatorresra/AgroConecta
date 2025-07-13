@@ -23,7 +23,7 @@ export default function DashboardTabs() {
       id: 'messages',
       label: 'Mensajes',
       icon: MessageCircle,
-      path: `${baseRoute}/messages`
+      path: `/messages`
     },
     {
       id: 'sales',
