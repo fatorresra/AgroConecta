@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { MapPin, Star } from "lucide-react"
+import { MapPin, Star, MessageCircle } from "lucide-react"
 // import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,8 +10,17 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
+import { useProductChat } from "@/features/messaging/hooks/useProductChat"
 
 export default function ProductCard({ product }) {
+  const { loading, startChatWithProduct } = useProductChat();
+
+  const handleChatClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await startChatWithProduct(product);
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative">
@@ -45,7 +54,7 @@ export default function ProductCard({ product }) {
           </span>
           <span className="text-gray-500">/{product.unit || product.unidad}</span>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-gray-600">
             Por: {product.farmer || product.agricultor}
           </span>
@@ -54,9 +63,21 @@ export default function ProductCard({ product }) {
             <span className="text-sm">{product.rating}</span>
           </div>
         </div>
-        <Button className="w-full mt-4 bg-green-600 hover:bg-green-700" asChild>
-          <Link to={`/productos/${product.id}`}>Ver Detalles</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button className="flex-1 bg-green-600 hover:bg-green-700" asChild>
+            <Link to={`/products/${product.id}`}>Ver Detalles</Link>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleChatClick}
+            disabled={loading}
+            className="flex items-center gap-1"
+          >
+            <MessageCircle className="h-4 w-4" />
+            {loading ? 'Iniciando...' : 'Chat'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
