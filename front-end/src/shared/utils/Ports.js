@@ -5,5 +5,9 @@ export const PORTS = {
   PRODUCTS: {
     BASE_URL: "http://localhost:5000/api/v1",
     
+  },
+  CHAT: {
+    BASE_URL: "http://localhost:8000",
+    WS_URL: "ws://localhost:8000/socket.io/"
   }
 };

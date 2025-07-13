@@ -1,129 +1,181 @@
 import { create } from 'zustand';
-
-// Datos de ejemplo - en el futuro esto vendrá de una API
-const conversacionesEjemplo = [
-  {
-    id: 1,
-    usuario: {
-      nombre: "María López",
-      rol: "comprador",
-      avatar: "/placeholder.svg?height=40&width=40",
-      online: true,
-    },
-    producto: {
-      id: 101,
-      nombre: "Café Orgánico Premium",
-      imagen: "/placeholder.svg?height=60&width=60",
-    },
-    ultimoMensaje: {
-      texto: "¿Tienes disponibilidad para 100kg?",
-      fecha: "10:30",
-      leido: true,
-      enviado: false,
-    },
-    noLeidos: 0,
-  },
-  {
-    id: 2,
-    usuario: {
-      nombre: "Carlos Rodríguez",
-      rol: "comprador",
-      avatar: "/placeholder.svg?height=40&width=40",
-      online: false,
-    },
-    producto: {
-      id: 102,
-      nombre: "Aguacate Hass",
-      imagen: "/placeholder.svg?height=60&width=60",
-    },
-    ultimoMensaje: {
-      texto: "Perfecto, entonces acordamos 50kg a $3,500 por kg.",
-      fecha: "Ayer",
-      leido: false,
-      enviado: true,
-    },
-    noLeidos: 0,
-  },
-  {
-    id: 3,
-    usuario: {
-      nombre: "Ana Martínez",
-      rol: "agricultor",
-      avatar: "/placeholder.svg?height=40&width=40",
-      online: true,
-    },
-    producto: {
-      id: 103,
-      nombre: "Plátano Hartón",
-      imagen: "/placeholder.svg?height=60&width=60",
-    },
-    ultimoMensaje: {
-      texto: "¿Cuál es el precio mínimo por tonelada?",
-      fecha: "Ayer",
-      leido: true,
-      enviado: false,
-    },
-    noLeidos: 2,
-  },
-];
-
-const mensajesEjemplo = [
-  {
-    id: 1,
-    texto: "Hola, estoy interesado en tu Café Orgánico Premium",
-    fecha: "10:15",
-    enviado: false,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 2,
-    texto: "¡Hola! Gracias por tu interés. ¿Qué cantidad necesitas?",
-    fecha: "10:18",
-    enviado: true,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 3,
-    texto: "Estoy buscando aproximadamente 100kg para mi cafetería",
-    fecha: "10:20",
-    enviado: false,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 4,
-    texto: "Perfecto, tengo disponibilidad. El precio es de $15,000 por kg",
-    fecha: "10:22",
-    enviado: true,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 5,
-    texto: "¿Tienes disponibilidad para 100kg?",
-    fecha: "10:30",
-    enviado: false,
-    leido: true,
-    tipo: "texto",
-  },
-];
+import { chatService } from '../services/ChatService';
+import { useAuthStore } from '@/features/authentication/store/AuthStore';
+import { PORTS } from '@/shared/utils/Ports';
 
 export const useMessageStore = create((set, get) => ({
   // Estado
-  conversations: conversacionesEjemplo,
+  conversations: [],
   messages: {},
   selectedConversation: null,
   isLoading: false,
   error: null,
+  isConnected: false,
+  socket: null,
+
+  // Inicializar WebSocket
+  initializeWebSocket: () => {
+    const { user } = useAuthStore.getState();
+    if (!user) return;
+
+    try {
+      // Importar socket.io-client dinámicamente
+      import('socket.io-client').then((io) => {
+        const socket = io.default(PORTS.CHAT.BASE_URL, {
+          auth: {
+            token: useAuthStore.getState().token,
+            userId: user.id
+          },
+          transports: ['websocket'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000
+        });
+
+        socket.on('connect', () => {
+          console.log('WebSocket conectado');
+          set({ isConnected: true, socket });
+        });
+
+        socket.on('disconnect', () => {
+          console.log('WebSocket desconectado');
+          set({ isConnected: false });
+        });
+
+        socket.on('new_message', (message) => {
+          console.log('Nuevo mensaje recibido:', message);
+          get().handleNewMessage(message);
+        });
+
+        socket.on('message_updated', (message) => {
+          console.log('Mensaje actualizado:', message);
+          get().handleMessageUpdate(message);
+        });
+
+        socket.on('error', (error) => {
+          console.error('Error de WebSocket:', error);
+          set({ error: error.message });
+        });
+
+        set({ socket });
+      });
+    } catch (error) {
+      console.error('Error al inicializar WebSocket:', error);
+      set({ error: 'Error al conectar con el servidor' });
+    }
+  },
+
+  // Manejar nuevo mensaje desde WebSocket
+  handleNewMessage: (message) => {
+    const chatId = message.chat_id;
+    const currentMessages = get().messages[chatId] || [];
+    
+    // Convertir mensaje del backend al formato frontend
+    const frontendMessage = {
+      id: message.id,
+      texto: message.content,
+      fecha: new Date(message.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      enviado: message.sender_id === useAuthStore.getState().user?.id,
+      leido: message.status === 'read',
+      tipo: message.type
+    };
+
+    set(state => ({
+      messages: {
+        ...state.messages,
+        [chatId]: [...currentMessages, frontendMessage]
+      }
+    }));
+
+    // Actualizar último mensaje en la conversación
+    set(state => ({
+      conversations: state.conversations.map(conv =>
+        conv.chatId === chatId
+          ? {
+              ...conv,
+              ultimoMensaje: {
+                texto: message.content,
+                fecha: frontendMessage.fecha,
+                leido: false,
+                enviado: frontendMessage.enviado,
+              }
+            }
+          : conv
+      )
+    }));
+  },
+
+  // Manejar actualización de mensaje
+  handleMessageUpdate: (message) => {
+    const chatId = message.chat_id;
+    const messages = get().messages[chatId] || [];
+    
+    const updatedMessages = messages.map(msg =>
+      msg.id === message.id
+        ? { ...msg, leido: message.status === 'read' }
+        : msg
+    );
+
+    set(state => ({
+      messages: {
+        ...state.messages,
+        [chatId]: updatedMessages
+      }
+    }));
+  },
+
+  // Cargar conversaciones del usuario
+  loadConversations: async () => {
+    const { user } = useAuthStore.getState();
+    if (!user) return;
+
+    set({ isLoading: true, error: null });
+
+    try {
+      const chats = await chatService.getUserChats(user.id);
+      
+      // Convertir chats del backend al formato frontend
+      const conversations = chats.map(chat => ({
+        id: chat.id,
+        chatId: chat.id,
+        usuario: {
+          nombre: getOtherParticipant(chat.participants, user.id)?.user_id || 'Usuario',
+          rol: getOtherParticipant(chat.participants, user.id)?.role || 'comprador',
+          avatar: '/placeholder.svg?height=40&width=40',
+          online: true,
+        },
+        producto: {
+          id: extractProductId(chat.title),
+          nombre: chat.title || 'Producto',
+          imagen: '/placeholder.svg?height=60&width=60',
+        },
+        ultimoMensaje: {
+          texto: 'Chat iniciado',
+          fecha: new Date(chat.last_message_at || chat.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          leido: true,
+          enviado: false,
+        },
+        noLeidos: chat.unread_counts[user.id] || 0,
+      }));
+
+      set({ conversations, isLoading: false });
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+      set({ error: error.message, isLoading: false });
+    }
+  },
+
+  // Refrescar conversaciones
+  refreshConversations: async () => {
+    await get().loadConversations();
+  },
 
   // Acciones para conversaciones
   setSelectedConversation: (conversation) => {
     set({ selectedConversation: conversation });
     // Cargar mensajes si no están cargados
-    if (conversation && !get().messages[conversation.id]) {
-      get().loadMessages(conversation.id);
+    if (conversation && !get().messages[conversation.chatId]) {
+      get().loadMessages(conversation.chatId);
     }
   },
 
@@ -139,51 +191,83 @@ export const useMessageStore = create((set, get) => ({
   },
 
   // Acciones para mensajes
-  loadMessages: (conversationId) => {
-    set(state => ({
-      messages: {
-        ...state.messages,
-        [conversationId]: mensajesEjemplo // En el futuro será una API call
-      }
-    }));
+  loadMessages: async (chatId) => {
+    set({ isLoading: true });
+    
+    try {
+      const messages = await chatService.getChatMessages(chatId);
+      
+      // Convertir mensajes del backend al formato frontend
+      const frontendMessages = messages.map(message => ({
+        id: message.id,
+        texto: message.content,
+        fecha: new Date(message.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        enviado: message.sender_id === useAuthStore.getState().user?.id,
+        leido: message.status === 'read',
+        tipo: message.type
+      }));
+
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [chatId]: frontendMessages
+        },
+        isLoading: false
+      }));
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      set({ error: error.message, isLoading: false });
+    }
   },
 
-  sendMessage: (conversationId, text) => {
-    const newMessage = {
-      id: Date.now(),
-      texto: text,
-      fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      enviado: true,
-      leido: false,
-      tipo: "texto",
-    };
+  sendMessage: async (conversationId, text) => {
+    const { user } = useAuthStore.getState();
+    if (!user) return;
 
-    set(state => ({
-      messages: {
-        ...state.messages,
-        [conversationId]: [
-          ...(state.messages[conversationId] || []),
-          newMessage
-        ]
-      }
-    }));
+    try {
+      const message = await chatService.sendMessage(conversationId, user.id, text);
+      
+      // El mensaje se agregará automáticamente via WebSocket
+      // Pero por si acaso, lo agregamos localmente también
+      const newMessage = {
+        id: message.id,
+        texto: text,
+        fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        enviado: true,
+        leido: false,
+        tipo: "texto",
+      };
 
-    // Actualizar último mensaje en la conversación
-    set(state => ({
-      conversations: state.conversations.map(conv =>
-        conv.id === conversationId
-          ? {
-              ...conv,
-              ultimoMensaje: {
-                texto: text,
-                fecha: newMessage.fecha,
-                leido: false,
-                enviado: true,
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [conversationId]: [
+            ...(state.messages[conversationId] || []),
+            newMessage
+          ]
+        }
+      }));
+
+      // Actualizar último mensaje en la conversación
+      set(state => ({
+        conversations: state.conversations.map(conv =>
+          conv.chatId === conversationId
+            ? {
+                ...conv,
+                ultimoMensaje: {
+                  texto: text,
+                  fecha: newMessage.fecha,
+                  leido: false,
+                  enviado: true,
+                }
               }
-            }
-          : conv
-      )
-    }));
+            : conv
+        )
+      }));
+    } catch (error) {
+      console.error('Error sending message:', error);
+      set({ error: error.message });
+    }
   },
 
   // Utilidades
@@ -192,4 +276,32 @@ export const useMessageStore = create((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+
+  // Limpiar al cerrar sesión
+  cleanup: () => {
+    const { socket } = get();
+    if (socket) {
+      socket.disconnect();
+    }
+    set({
+      conversations: [],
+      messages: {},
+      selectedConversation: null,
+      isLoading: false,
+      error: null,
+      isConnected: false,
+      socket: null
+    });
+  }
 }));
+
+// Funciones auxiliares
+const getOtherParticipant = (participants, currentUserId) => {
+  return participants.find(p => p.user_id !== currentUserId);
+};
+
+const extractProductId = (title) => {
+  // Extraer ID del producto del título si es posible
+  const match = title?.match(/ID:(\d+)/);
+  return match ? match[1] : Math.random().toString(36).substr(2, 9);
+};

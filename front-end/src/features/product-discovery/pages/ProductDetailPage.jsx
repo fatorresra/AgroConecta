@@ -5,9 +5,11 @@ import Footer from "@/shared/components/templates/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useProductChat } from "@/features/messaging/hooks/useProductChat"
 
 export default function ProductDetailPage() {
   const { id } = useParams()
+  const { loading, startChatWithProduct } = useProductChat();
 
   // TODO: Replace with actual API call
   const product = {
@@ -31,6 +33,10 @@ export default function ProductDetailPage() {
       "Tostado: Medio",
     ]
   }
+
+  const handleChatClick = async () => {
+    await startChatWithProduct(product);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,6 +64,9 @@ export default function ProductDetailPage() {
                 <MapPin className="h-4 w-4" />
                 <span>{product.ubicacion}</span>
               </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Por: {product.agricultor}
+              </p>
             </div>
 
             <div className="flex items-center justify-between">
@@ -117,9 +126,15 @@ export default function ProductDetailPage() {
               <Button size="lg" className="flex-1 bg-green-600 hover:bg-green-700">
                 Contactar Agricultor
               </Button>
-              <Button size="lg" variant="outline" className="flex gap-2">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="flex gap-2"
+                onClick={handleChatClick}
+                disabled={loading}
+              >
                 <MessageSquare className="h-5 w-5" />
-                Chat
+                {loading ? 'Iniciando Chat...' : 'Chat'}
               </Button>
             </div>
           </div>

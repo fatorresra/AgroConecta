@@ -42,13 +42,9 @@ const router = createBrowserRouter([
     element: <FarmerProductsPage />,
   },
   {
-    path: '/farmer/messages',
+    path: '/messages',
     element: <MessagesPage />,
   },
-  {
-    path: '/buyer/messages',
-    element: <MessagesPage />,
-  }
 ])
 
 createRoot(document.getElementById('root')).render(

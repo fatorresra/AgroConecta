@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, ChevronLeft } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ConversationItem } from "../molecules/ConversationItem"
-import { useMessages } from "../../hooks/useMessages"
+import { useMessageStore } from "../../store/messageStore"
 
 export default function ChatSidebar({ 
   conversacionSeleccionada, 
@@ -12,24 +12,31 @@ export default function ChatSidebar({
   mostrarChat 
 }) {
   const [busqueda, setBusqueda] = useState("");
-  const { conversations, selectConversation, searchConversations } = useMessages();
+  const [conversacionesFiltradas, setConversacionesFiltradas] = useState([]);
+  const { conversations, setSelectedConversation } = useMessageStore();
 
-  // Filtrar conversaciones según la búsqueda
-  const conversacionesFiltradas = conversations.filter(
-    (conv) =>
-      conv.usuario.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      conv.producto.nombre.toLowerCase().includes(busqueda.toLowerCase()),
-  );
+  // Actualizar conversaciones filtradas cuando cambie la búsqueda o las conversaciones
+  useEffect(() => {
+    if (!busqueda.trim()) {
+      setConversacionesFiltradas(conversations);
+    } else {
+      const filtered = conversations.filter(
+        (conv) =>
+          conv.usuario.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+          conv.producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      );
+      setConversacionesFiltradas(filtered);
+    }
+  }, [busqueda, conversations]);
 
   const handleConversacionClick = (conversacion) => {
     setConversacionSeleccionada(conversacion);
-    selectConversation(conversacion);
+    setSelectedConversation(conversacion);
     setMostrarChat(true);
   };
 
   const handleBusquedaChange = (e) => {
     setBusqueda(e.target.value);
-    searchConversations(e.target.value);
   };
 
   return (
@@ -54,7 +61,7 @@ export default function ChatSidebar({
       <div className="flex-1 overflow-y-auto">
         {conversacionesFiltradas.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
-            No se encontraron conversaciones
+            {busqueda.trim() ? 'No se encontraron conversaciones' : 'No hay conversaciones aún'}
           </div>
         ) : (
           conversacionesFiltradas.map((conversacion) => (
