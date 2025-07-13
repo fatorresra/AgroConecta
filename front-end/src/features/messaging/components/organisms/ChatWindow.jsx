@@ -2,81 +2,28 @@ import { useState, useRef, useEffect } from "react"
 import { Send, Paperclip, Phone, Video, MoreVertical, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-
-// Mensajes de ejemplo
-const mensajesEjemplo = [
-  {
-    id: 1,
-    texto: "Hola, estoy interesado en tu Café Orgánico Premium",
-    fecha: "10:15",
-    enviado: false,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 2,
-    texto: "¡Hola! Gracias por tu interés. ¿Qué cantidad necesitas?",
-    fecha: "10:18",
-    enviado: true,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 3,
-    texto: "Estoy buscando aproximadamente 100kg para mi cafetería",
-    fecha: "10:20",
-    enviado: false,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 4,
-    texto: "Perfecto, tengo disponibilidad. El precio es de $15,000 por kg",
-    fecha: "10:22",
-    enviado: true,
-    leido: true,
-    tipo: "texto",
-  },
-  {
-    id: 5,
-    texto: "¿Tienes disponibilidad para 100kg?",
-    fecha: "10:30",
-    enviado: false,
-    leido: true,
-    tipo: "texto",
-  },
-];
+import UserAvatar from "@/shared/components/atoms/UserAvatar"
+import { useMessages } from "../../hooks/useMessages"
 
 export default function ChatWindow({ 
   conversacionSeleccionada, 
   mostrarChat, 
   setMostrarChat 
 }) {
-  const [mensajes, setMensajes] = useState(mensajesEjemplo);
   const [nuevoMensaje, setNuevoMensaje] = useState("");
   const mensajesFinRef = useRef(null);
+  const { currentMessages, sendMessage } = useMessages();
 
   // Scroll al último mensaje
   useEffect(() => {
     mensajesFinRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [mensajes]);
+  }, [currentMessages]);
 
   // Función para enviar un mensaje
   const enviarMensaje = () => {
     if (nuevoMensaje.trim() === "") return;
-
-    const mensaje = {
-      id: Date.now(),
-      texto: nuevoMensaje,
-      fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      enviado: true,
-      leido: false,
-      tipo: "texto",
-    };
-
-    setMensajes([...mensajes, mensaje]);
+    
+    sendMessage(nuevoMensaje);
     setNuevoMensaje("");
   };
 
@@ -116,17 +63,11 @@ export default function ChatWindow({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           
-          <div className="relative">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={conversacionSeleccionada.usuario.avatar} />
-              <AvatarFallback>
-                {conversacionSeleccionada.usuario.nombre.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            {conversacionSeleccionada.usuario.online && (
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-white rounded-full" />
-            )}
-          </div>
+          <UserAvatar
+            user={conversacionSeleccionada.usuario}
+            showOnlineStatus={true}
+            size="md"
+          />
 
           <div>
             <h3 className="font-medium text-gray-900">
@@ -160,7 +101,7 @@ export default function ChatWindow({
 
       {/* Área de mensajes */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {mensajes.map((mensaje) => (
+        {currentMessages.map((mensaje) => (
           <div
             key={mensaje.id}
             className={`flex ${mensaje.enviado ? "justify-end" : "justify-start"}`}
