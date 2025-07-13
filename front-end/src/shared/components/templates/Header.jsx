@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import { Leaf, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { useAuthStore } from "@/features/authentication/store/AuthStore";
 import ThemeToggle from "@/shared/components/atoms/ThemeToggle"
 
@@ -42,24 +43,36 @@ export default function Header({
             </Button>
           )} */}
 
-          {/* temporary products button, could add this to a user popover menu */}
-          {userType === "agricultor" && (
-            <Button variant="secondary" size="sm" asChild>
-              <Link to="/farmer/products">Mis Productos</Link>
-            </Button>
-          )}
-
-          <Avatar>
-            <AvatarImage src="/placeholder.svg?height=40&width=40" />
-            <AvatarFallback>
-              {userName.split(' ').map(n => n[0]).join('')}
-            </AvatarFallback>
-          </Avatar>
-
-          {/* temporary logout button */}
-          <Button variant="ghost" size="sm" onClick={logout} asChild>
-            <Link to="/">Cerrar Sesión</Link>
-          </Button>
+          {/* User actions menu */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Avatar className="cursor-pointer">
+                <AvatarImage src="/placeholder.svg?height=40&width=40" />
+                <AvatarFallback>
+                  {userName.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="min-w-max">
+              <div className="flex flex-col items-stretch gap-1">
+                {userType === "agricultor" && (
+                  <>
+                    <Link to="/farmer/products" className="px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition">
+                      Mis Productos
+                    </Link>
+                    <hr className="my-1 w-full border-gray-200" />
+                  </>
+                )}
+                <Link
+                  to="/"
+                  className="px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded transition"
+                  onClick={logout}
+                >
+                  Cerrar Sesión
+                </Link>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       )
     }
