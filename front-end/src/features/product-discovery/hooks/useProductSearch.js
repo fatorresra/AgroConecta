@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useProductSearchStore } from '../store/productSearchStore';
 
-export const useProductSearch = (productId) => {
+export const useProductSearch = (filters, productId) => {
   const {
     products,
     selectedProduct,
@@ -17,10 +17,10 @@ export const useProductSearch = (productId) => {
     if (productId) {
       fetchProductById(productId);
     } else {
-      fetchProducts();
+      fetchProducts(filters);
     }
     // eslint-disable-next-line
-  }, []);
+  }, [filters, productId]);
 
   return {
     products,

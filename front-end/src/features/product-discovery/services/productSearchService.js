@@ -34,10 +34,53 @@ const transformProduct = (product) => {
   };
 };
 
+export function buildProductQueryParams(filters) {
+  const params = new URLSearchParams();
+  if (!filters) return '';
+
+  // Map of special handlers for specific filter keys
+  const specialHandlers = {
+    price: (value) => {
+      if (Array.isArray(value)) {
+        params.append('min_price', value[0]);
+        params.append('max_price', value[1]);
+      }
+    },
+    harvest_date: (value) => {
+      if (value) {
+        try {
+          params.append('harvest_date', new Date(value).toISOString());
+        } catch {
+          params.append('harvest_date', value);
+        }
+      }
+    },
+    quantity: (value) => {
+      if (value) {
+        params.append('min_quantity', value);
+      }
+    },
+  };
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '' || value === 'all')
+      return;
+    if (specialHandlers[key]) {
+      specialHandlers[key](value);
+    } else {
+      params.append(key, value);
+    }
+  });
+  return params.toString();
+}
+
 export const productSearchService = {
-  getProducts: async () => {
+  getProducts: async (filters) => {
     try {
-      const response = await axios.get(`${BASE_URL}/products`);
+      // TO DO: Update based on new endpoint
+      const query = buildProductQueryParams(filters);
+      const url = query ? `${BASE_URL}/products?${query}` : `${BASE_URL}/products`;
+      const response = await axios.get(url);
       const products = response.data.map(transformProduct);
       return {
         success: true,

@@ -14,23 +14,24 @@ import ProductFilters from "../components/organisms/ProductFilters"
 import { productTypes } from "@/shared/utils/options/productTypes"
 import { PRODUCT_FILTERS } from "@/shared/utils/options/productFilters"
 import { useProductSearch } from "../hooks/useProductSearch"
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const typeOptions = [
   { value: "all", label: "Todas" },
   ...productTypes.map(opt => ({ value: opt.value, label: opt.plural || opt.label }))
 ]
 
-export default function SearchProductsPage() {
-  const { products, isLoading, error } = useProductSearch()
+function getDefaultFilters() {
+  return Object.fromEntries(
+    Object.entries(PRODUCT_FILTERS).map(([key, config]) => [key, config.default])
+  );
+}
 
-  const getDefaultFilters = () => {
-    return Object.fromEntries(
-      Object.entries(PRODUCT_FILTERS).map(([key, config]) => [key, config.default])
-    );
-  }
-  
-  const [filters, setFilters] = useState(getDefaultFilters());
+export default function SearchProductsPage() {
+  const [filters, setFilters] = useState(() => getDefaultFilters());
+  const debouncedFilters = useDebouncedValue(filters, 500);
   const [sortBy, setSortBy] = useState("recientes");
+  const { products, isLoading, error } = useProductSearch(debouncedFilters);
 
   // Update a filter by name
   const handleFilterChange = (filterName, value) => {

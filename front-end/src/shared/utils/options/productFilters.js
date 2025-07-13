@@ -1,3 +1,4 @@
+// Filters to use in product discovery
 export const PRODUCT_FILTERS = {
   name: {
     label: "Nombre",
@@ -23,5 +24,9 @@ export const PRODUCT_FILTERS = {
     default: "",
     type: "number",
   },
-  // TO DO: Add harvest date
+  harvest_date: {
+    label: "Fecha de cosecha",
+    default: "",
+    type: "date",
+  },
 }

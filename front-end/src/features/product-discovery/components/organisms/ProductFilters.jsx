@@ -12,52 +12,70 @@ import {
 export default function ProductFilters({ filters, onFilterChange, typeOptions }) {
   return (
     <div className="space-y-6">
-      {/* Type filter */}
-      <div>
-        <Label className="text-base font-medium mb-3 block">{PRODUCT_FILTERS.type.label}</Label>
-        <Select
-          value={filters.type}
-          onValueChange={value => onFilterChange("type", value)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {typeOptions.map(opt => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {Object.entries(PRODUCT_FILTERS).map(([key, config]) => {
+        // Skip name filter as it's handled outside this component
+        if (key === "name") return null;
 
-      {/* Price filter */}
-      <div>
-        <Label className="text-base font-medium mb-3 block">
-          {PRODUCT_FILTERS.price.label}: ${filters.price[0].toLocaleString()} - ${filters.price[1].toLocaleString()}
-        </Label>
-        <Slider
-          value={filters.price}
-          onValueChange={value => onFilterChange("price", value)}
-          max={PRODUCT_FILTERS.price.max}
-          min={PRODUCT_FILTERS.price.min}
-          step={PRODUCT_FILTERS.price.step}
-          className="w-full"
-        />
-      </div>
-
-      {/* Quantity filter */}
-      <div>
-        <Label className="text-base font-medium mb-3 block">{PRODUCT_FILTERS.quantity.label}</Label>
-        <input
-          type="number"
-          className="w-full border rounded px-3 py-2"
-          value={filters.quantity}
-          onChange={e => onFilterChange("quantity", e.target.value === '' ? '' : Number(e.target.value))}
-          placeholder="Ej: 10"
-        />
-      </div>
+        // Special handling for 'type' select
+        if (config.type === "select") {
+          return (
+            <div key={key}>
+              <Label className="text-base font-medium mb-3 block">{config.label}</Label>
+              <Select
+                value={filters[key]}
+                onValueChange={value => onFilterChange(key, value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(key === "type" ? typeOptions : config.options || []).map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        }
+        // Range/slider (e.g., price)
+        if (config.type === "range") {
+          const [min, max] = filters[key] || [config.min, config.max];
+          return (
+            <div key={key}>
+              <Label className="text-base font-medium mb-3 block">
+                {config.label}: ${min.toLocaleString()} - ${max.toLocaleString()}
+              </Label>
+              <Slider
+                value={filters[key]}
+                onValueChange={value => onFilterChange(key, value)}
+                max={config.max}
+                min={config.min}
+                step={config.step}
+                className="w-full"
+              />
+            </div>
+          );
+        }
+        // Other: number, text, date
+        if (["number", "text", "date"].includes(config.type)) {
+          return (
+            <div key={key}>
+              <Label className="text-base font-medium mb-3 block">{config.label}</Label>
+              <input
+                type={config.type}
+                className="w-full border rounded px-3 py-2"
+                value={filters[key]}
+                onChange={e => onFilterChange(key, e.target.value)}
+                placeholder={config.placeholder || ""}
+              />
+            </div>
+          );
+        }
+        // Fallback (should not happen)
+        return null;
+      })}
     </div>
-  )
+  );
 }

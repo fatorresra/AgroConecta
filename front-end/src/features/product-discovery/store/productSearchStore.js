@@ -8,10 +8,10 @@ export const useProductSearchStore = create((set) => ({
   error: null,
 
   // Get all products
-  fetchProducts: async () => {
+  fetchProducts: async (filters) => {
     set({ isLoading: true });
     try {
-      const response = await productSearchService.getProducts();
+      const response = await productSearchService.getProducts(filters);
       if (response.success) {
         set({ products: response.products, isLoading: false, error: null });
       } else {
