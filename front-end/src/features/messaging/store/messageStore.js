@@ -115,8 +115,7 @@ export const useMessageStore = create((set, get) => ({
       const tempMessageIndex = currentMessages.findIndex(msg => 
         msg.isTemp && 
         msg.texto === message.content && 
-        msg.enviado === true &&
-        msg.tempId // Tiene tempId guardado
+        msg.enviado === true
       );
       
       if (tempMessageIndex !== -1) {
