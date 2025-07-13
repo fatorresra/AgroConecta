@@ -9,6 +9,7 @@ import LandingPage from './features/home/pages/LandingPage.jsx'
 import SearchProductsPage from './features/product-discovery/pages/SearchProducts.jsx'
 import ProductDetailPage from './features/product-discovery/pages/ProductDetailPage.jsx'
 import FarmerProductsPage from './features/product-management/pages/FarmerProducts.jsx'
+import MessagesPage from './features/messaging/pages/MessagesPage.jsx'
 import '@/styles/globals.css'
 
 const router = createBrowserRouter([
@@ -39,7 +40,11 @@ const router = createBrowserRouter([
   {
     path: '/farmer/products',
     element: <FarmerProductsPage />,
-  }
+  },
+  {
+    path: '/messages',
+    element: <MessagesPage />,
+  },
 ])
 
 createRoot(document.getElementById('root')).render(
