@@ -103,7 +103,7 @@ export const useMessageStore = create((set, get) => ({
     const frontendMessage = {
       id: message.id,
       texto: message.content,
-      fecha: new Date(message.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      fecha: new Date(message.sent_at).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }),
       enviado: message.sender_id === user?.id,
       leido: message.status === 'read',
       tipo: message.type || 'texto',
@@ -219,7 +219,7 @@ export const useMessageStore = create((set, get) => ({
         },
         ultimoMensaje: {
           texto: 'Chat iniciado',
-          fecha: new Date(chat.last_message_at || chat.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          fecha: new Date(chat.last_message_at || chat.created_at).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }),
           leido: true,
           enviado: false,
         },
@@ -286,7 +286,7 @@ export const useMessageStore = create((set, get) => ({
       const frontendMessages = messages.map(message => ({
         id: message.id,
         texto: message.content,
-        fecha: new Date(message.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        fecha: new Date(message.sent_at).toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }),
         enviado: message.sender_id === useAuthStore.getState().user?.id,
         leido: message.status === 'read',
         tipo: message.type
@@ -314,7 +314,7 @@ export const useMessageStore = create((set, get) => ({
     const tempMessage = {
       id: tempId,
       texto: text,
-      fecha: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      fecha: new Date().toLocaleTimeString('es-CO', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit' }),
       enviado: true,
       leido: false,
       tipo: "texto",
