@@ -5,7 +5,8 @@ export const useAuthStore = create(
   persist(
     (set) => ({
       token: null,
-      user: null,      login: async (credentials) => {
+      user: null,
+      login: async (credentials) => {
         const { email, password } = credentials;
         
         try {
