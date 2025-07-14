@@ -1,5 +1,5 @@
+import { PRODUCT_FILTERS } from "@/shared/utils/options/productFilters"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Slider } from "@/components/ui/slider"
 import {
   Select,
@@ -9,103 +9,73 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-export default function ProductFilters({
-  categorias,
-  departamentos,
-  certificaciones,
-  filters,
-  onFilterChange,
-}) {
-  const {
-    categoriaSeleccionada,
-    departamentoSeleccionado,
-    certificacionSeleccionada,
-    rangoPrecios,
-    soloOrganicos,
-  } = filters
-
+export default function ProductFilters({ filters, onFilterChange, typeOptions }) {
   return (
     <div className="space-y-6">
-      <div>
-        <Label className="text-base font-medium mb-3 block">Categoría</Label>
-        <Select
-          value={categoriaSeleccionada}
-          onValueChange={(value) => onFilterChange("categoriaSeleccionada", value)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {categorias.map((categoria) => (
-              <SelectItem key={categoria} value={categoria}>
-                {categoria}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {Object.entries(PRODUCT_FILTERS).map(([key, config]) => {
+        // Skip name filter as it's handled outside this component
+        if (key === "name") return null;
 
-      <div>
-        <Label className="text-base font-medium mb-3 block">Departamento</Label>
-        <Select
-          value={departamentoSeleccionado}
-          onValueChange={(value) => onFilterChange("departamentoSeleccionado", value)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {departamentos.map((departamento) => (
-              <SelectItem key={departamento} value={departamento}>
-                {departamento}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label className="text-base font-medium mb-3 block">Certificación</Label>
-        <Select
-          value={certificacionSeleccionada}
-          onValueChange={(value) => onFilterChange("certificacionSeleccionada", value)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {certificaciones.map((certificacion) => (
-              <SelectItem key={certificacion} value={certificacion}>
-                {certificacion}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label className="text-base font-medium mb-3 block">
-          Rango de Precios: ${rangoPrecios[0].toLocaleString()} - $
-          {rangoPrecios[1].toLocaleString()}
-        </Label>
-        <Slider
-          value={rangoPrecios}
-          onValueChange={(value) => onFilterChange("rangoPrecios", value)}
-          max={20000}
-          min={0}
-          step={500}
-          className="w-full"
-        />
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="organicos"
-          checked={soloOrganicos}
-          onCheckedChange={(checked) => onFilterChange("soloOrganicos", checked)}
-        />
-        <Label htmlFor="organicos">Solo productos orgánicos</Label>
-      </div>
+        // Special handling for 'type' select
+        if (config.type === "select") {
+          return (
+            <div key={key}>
+              <Label className="text-base font-medium mb-3 block">{config.label}</Label>
+              <Select
+                value={filters[key]}
+                onValueChange={value => onFilterChange(key, value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(key === "type" ? typeOptions : config.options || []).map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        }
+        // Range/slider (e.g., price)
+        if (config.type === "range") {
+          const [min, max] = filters[key] || [config.min, config.max];
+          return (
+            <div key={key}>
+              <Label className="text-base font-medium mb-3 block">
+                {config.label}: ${min.toLocaleString()} - ${max.toLocaleString()}
+              </Label>
+              <Slider
+                value={filters[key]}
+                onValueChange={value => onFilterChange(key, value)}
+                max={config.max}
+                min={config.min}
+                step={config.step}
+                className="w-full"
+              />
+            </div>
+          );
+        }
+        // Other: number, text, date
+        if (["number", "text", "date"].includes(config.type)) {
+          return (
+            <div key={key}>
+              <Label className="text-base font-medium mb-3 block">{config.label}</Label>
+              <input
+                type={config.type}
+                className="w-full border rounded px-3 py-2"
+                value={filters[key]}
+                onChange={e => onFilterChange(key, e.target.value)}
+                placeholder={config.placeholder || ""}
+              />
+            </div>
+          );
+        }
+        // Fallback (should not happen)
+        return null;
+      })}
     </div>
-  )
+  );
 }

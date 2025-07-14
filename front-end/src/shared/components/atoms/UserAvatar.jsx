@@ -21,7 +21,9 @@ export default function UserAvatar({
   return (
     <div className={`relative ${className}`}>
       <Avatar className={sizeClasses[size]}>
-        <AvatarImage src={user?.avatar} alt={user?.nombre || user?.name} />
+        {user?.avatar && (
+          <AvatarImage src={user?.avatar} />
+        )}
         <AvatarFallback>
           {getInitials(user?.nombre || user?.name)}
         </AvatarFallback>

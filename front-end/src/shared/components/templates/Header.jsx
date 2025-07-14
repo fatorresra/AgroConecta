@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { Leaf, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import UserAvatar from "@/shared/components/atoms/UserAvatar"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { useAuthStore } from "@/features/authentication/store/AuthStore";
 import ThemeToggle from "@/shared/components/atoms/ThemeToggle"
@@ -33,25 +33,20 @@ export default function Header({
       return (
         <div className="flex items-center space-x-4">
 
-          {/* messages icon maybe could be enabled later */}
-          {/* {userType === "farmer" && (
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/mensajes">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Mensajes ({notificationCount})
-              </Link>
-            </Button>
-          )} */}
+          {/* Messages icon, notificationCount not updated */}
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/messages" className="flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Mensajes{notificationCount > 0 ? ` (${notificationCount})` : ''}
+            </Link>
+          </Button>
 
           {/* User actions menu */}
           <Popover>
             <PopoverTrigger asChild>
-              <Avatar className="cursor-pointer">
-                <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                <AvatarFallback>
-                  {userName.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
+              <div className="cursor-pointer">
+                <UserAvatar user={user} className="cursor-pointer" />
+              </div>
             </PopoverTrigger>
             <PopoverContent align="end" className="min-w-max">
               <div className="flex flex-col items-stretch gap-1">

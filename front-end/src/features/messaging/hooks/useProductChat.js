@@ -48,7 +48,7 @@ export const useProductChat = () => {
         producto: {
           id: product.id,
           nombre: productData.name,
-          imagen: product.imagen || '/placeholder.svg?height=60&width=60',
+          imagen: product.image || '/placeholder.svg?height=60&width=60',
           precio: productData.price,
           unidad: productData.unit
         },
