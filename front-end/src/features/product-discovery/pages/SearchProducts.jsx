@@ -30,7 +30,7 @@ function getDefaultFilters() {
 
 export default function SearchProductsPage() {
   const [filters, setFilters] = useState(() => getDefaultFilters());
-  const debouncedFilters = useDebouncedValue(filters, 500);
+  const debouncedFilters = useDebouncedValue(filters, 700);
   const [sortBy, setSortBy] = useState("recientes");
   const {
     products,

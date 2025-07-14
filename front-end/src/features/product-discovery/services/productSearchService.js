@@ -3,6 +3,7 @@ import { PORTS } from "../../../shared/utils/Ports";
 // import { useAuthStore } from "../../authentication/store/AuthStore";
 
 const BASE_URL = PORTS.PRODUCTS.BASE_URL;
+const SEARCH_URL = PORTS.PRODUCTS.SEARCH_URL;
 
 const transformProduct = (product) => {
   // Si el producto es null o undefined, retornar null
@@ -55,12 +56,13 @@ export function buildProductQueryParams(filters) {
         params.append('max_price', value[1]);
       }
     },
+    // Only filtering by dates after harvest_date for now
     harvest_date: (value) => {
       if (value) {
         try {
-          params.append('harvest_date', new Date(value).toISOString());
+          params.append('harvest_date_start', new Date(value).toISOString());
         } catch {
-          params.append('harvest_date', value);
+          params.append('harvest_date_start', value);
         }
       }
     },
@@ -86,9 +88,8 @@ export function buildProductQueryParams(filters) {
 export const productSearchService = {
   getProducts: async (filters) => {
     try {
-      // TO DO: Update based on new endpoint
       const query = buildProductQueryParams(filters);
-      const url = query ? `${BASE_URL}/products?${query}` : `${BASE_URL}/products`;
+      const url = query ? `${SEARCH_URL}/product-search?${query}` : `${SEARCH_URL}/product-search`;
       console.log('Fetching products from:', url);
 
       const response = await axios.get(url);
