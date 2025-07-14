@@ -33,15 +33,13 @@ export default function Header({
       return (
         <div className="flex items-center space-x-4">
 
-          {/* messages icon maybe could be enabled later */}
-          {/* {userType === "farmer" && (
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/mensajes">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Mensajes ({notificationCount})
-              </Link>
-            </Button>
-          )} */}
+          {/* Messages icon, notificationCount not updated */}
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/messages" className="flex items-center">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Mensajes{notificationCount > 0 ? ` (${notificationCount})` : ''}
+            </Link>
+          </Button>
 
           {/* User actions menu */}
           <Popover>
