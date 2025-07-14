@@ -5,6 +5,7 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Header from "@/shared/components/templates/Header"
+import DashboardTabs from "@/shared/components/organisms/DashboardTabs"
 import ProductList from "../components/organisms/ProductList"
 import NewProductModal from "../components/organisms/NewProductModal"
 import EditProductModal from "../components/organisms/EditProductModal"
@@ -70,70 +71,63 @@ export default function FarmerProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
-        isAuthenticated={true}
-        userName="Juan Díaz"
         pageTitle="Panel de Agricultor"
         pageDescription="Gestiona tus productos y conecta con compradores"
-        showAuthButtons={false}
-        userType="farmer"
-        notificationCount={3}
       />
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsContent value="productos" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Mis Productos</h2>
-              <Button 
-                className="bg-green-600 hover:bg-green-700" 
-                onClick={() => setModalNuevoProducto(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Producto
-              </Button>
-            </div>
+        <DashboardTabs />
+        
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Mis Productos</h2>
+          <Button 
+            className="bg-green-600 hover:bg-green-700" 
+            onClick={() => setModalNuevoProducto(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Producto
+          </Button>
+        </div>
 
-            <ProductList
-              productos={products}
-              onEdit={handleEditProduct}
-              onDelete={handleDeleteProduct}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Modales */}
-      {modalNuevoProducto && (
-        <NewProductModal
-          open={modalNuevoProducto}
-          onOpenChange={setModalNuevoProducto}
-          onSave={handleCreateProduct}
+        <ProductList
+          productos={products}
+          onEdit={handleEditProduct}
+          onDelete={handleDeleteProduct}
         />
-      )}
-      
-      {selectedProduct && (
-        <>
-          <EditProductModal
-            open={modalEditarProducto}
-            onOpenChange={(open) => {
-              setModalEditarProducto(open);
-              if (!open) clearSelectedProduct();
-            }}
-            onSave={handleSaveEdit}
-            producto={selectedProduct}
-          />
 
-          <DeleteProductModal
-            open={modalEliminarProducto}
-            onOpenChange={(open) => {
-              setModalEliminarProducto(open);
-              if (!open) clearSelectedProduct();
-            }}
-            onConfirm={handleConfirmDelete}
-            producto={selectedProduct}
+        {/* Modales */}
+        {modalNuevoProducto && (
+          <NewProductModal
+            open={modalNuevoProducto}
+            onOpenChange={setModalNuevoProducto}
+            onSave={handleCreateProduct}
           />
-        </>
-      )}
+        )}
+        
+        {selectedProduct && (
+          <>
+            <EditProductModal
+              open={modalEditarProducto}
+              onOpenChange={(open) => {
+                setModalEditarProducto(open);
+                if (!open) clearSelectedProduct();
+              }}
+              onSave={handleSaveEdit}
+              producto={selectedProduct}
+            />
+
+            <DeleteProductModal
+              open={modalEliminarProducto}
+              onOpenChange={(open) => {
+                setModalEliminarProducto(open);
+                if (!open) clearSelectedProduct();
+              }}
+              onConfirm={handleConfirmDelete}
+              producto={selectedProduct}
+            />
+          </>
+        )}
+      </div>
     </div>
   )
 }

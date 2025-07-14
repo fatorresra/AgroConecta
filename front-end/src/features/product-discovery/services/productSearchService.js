@@ -28,9 +28,18 @@ const transformProduct = (product) => {
     
     // Datos adicionales
     farm_id: product.farm_id || null,
-    status: "Activo",
     image: product.image || "/placeholder.svg?height=80&width=80",
-    visits: Number(product.visits || 0)
+
+    // Nombres de datos alternativos por compatibilidad
+    category: product.type || '',
+    price: product.price_per_unit || 0,
+    farmer_id: product.farm_id || null,
+
+    // Nombres en español alternativos por compatibilidad
+    nombre: product.name || '',
+    imagen: product.image || "/placeholder.svg?height=80&width=80",
+    precio: product.price_per_unit || 0,
+    unidad: product.unit || 'unidad',
   };
 };
 
@@ -80,8 +89,12 @@ export const productSearchService = {
       // TO DO: Update based on new endpoint
       const query = buildProductQueryParams(filters);
       const url = query ? `${BASE_URL}/products?${query}` : `${BASE_URL}/products`;
+      console.log('Fetching products from:', url);
+
       const response = await axios.get(url);
       const products = response.data.map(transformProduct);
+      console.log('Number of products found:', products.length);
+
       return {
         success: true,
         products
@@ -90,6 +103,7 @@ export const productSearchService = {
       return {
         success: false,
         message: error.response?.data?.message || "Error al obtener productos",
+        products: []
       };
     }
   },
@@ -97,15 +111,27 @@ export const productSearchService = {
   getProductById: async (id) => {
     try {
       const response = await axios.get(`${BASE_URL}/products/${id}`);
+      const product = transformProduct(response.data);
       return {
         success: true,
-        product: transformProduct(response.data)
+        product
       };
     } catch (error) {
+      console.error('Error fetching product:', error);
+      if (error.response?.status === 404) {
+        return {
+          success: false,
+          message: 'Producto no encontrado',
+          product: null
+        };
+      }
       return {
         success: false,
-        message: error.response?.data?.message || "Error al obtener el producto",
+        message: error.response?.data?.error || 'Error al obtener el producto',
+        product: null
       };
     }
   }
 };
+
+export default productSearchService;

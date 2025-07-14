@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Filter, SlidersHorizontal } from "lucide-react"
+import { Search, Filter, SlidersHorizontal, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import Header from "@/shared/components/templates/Header"
 import Footer from "@/shared/components/templates/Footer"
 import ProductGrid from "../components/organisms/ProductGrid"
@@ -31,7 +32,13 @@ export default function SearchProductsPage() {
   const [filters, setFilters] = useState(() => getDefaultFilters());
   const debouncedFilters = useDebouncedValue(filters, 500);
   const [sortBy, setSortBy] = useState("recientes");
-  const { products, isLoading, error } = useProductSearch(debouncedFilters);
+  const {
+    products,
+    isLoading,
+    error,
+    clearError,
+    refetchProducts,
+  } = useProductSearch(debouncedFilters);
 
   // Update a filter by name
   const handleFilterChange = (filterName, value) => {
@@ -65,6 +72,24 @@ export default function SearchProductsPage() {
             Descubre productos directamente de los agricultores colombianos. Calidad garantizada y precios justos.
           </p>
         </div>
+
+        {/* Mostrar error si existe */}
+        {error && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              {error}
+              <Button 
+                variant="link" 
+                size="sm" 
+                onClick={clearError}
+                className="ml-2 text-red-600 p-0 h-auto"
+              >
+                Cerrar
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Barra de búsqueda y filtros */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
@@ -141,12 +166,34 @@ export default function SearchProductsPage() {
           {/* Lista de productos */}
           <div className="lg:col-span-3">
             <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">{products.length} productos encontrados</p>
+              <p className="text-gray-600">
+                {isLoading ? 'Cargando...' : `${products.length} productos encontrados`}
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={refetchProducts}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Cargando...' : 'Recargar Productos'}
+                </Button>
+                <Button variant="outline" onClick={() => setFilters(getDefaultFilters())}>
+                  Limpiar Filtros
+                </Button>
+              </div>
             </div>
 
-            {sortedProducts.length > 0 ? (
+            {/* Estado de carga */}
+            {isLoading && (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+              </div>
+            )}
+
+            {/* Productos */}
+            {!isLoading && sortedProducts.length > 0 ? (
               <ProductGrid products={sortedProducts} />
-            ) : (
+            ) : !isLoading && (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <Search className="h-16 w-16 mx-auto" />
@@ -163,7 +210,7 @@ export default function SearchProductsPage() {
             )}
 
             {/* Paginación */}
-            {/* {products.length > 0 && (
+            {/* {!isLoading && products.length > 0 && (
               <div className="flex justify-center mt-8">
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" disabled>

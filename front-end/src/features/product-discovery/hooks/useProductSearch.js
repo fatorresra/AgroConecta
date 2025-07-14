@@ -22,6 +22,10 @@ export const useProductSearch = (filters, productId) => {
     // eslint-disable-next-line
   }, [filters, productId]);
 
+  const refetchProducts = () => {
+    fetchProducts(filters);
+  };
+
   return {
     products,
     selectedProduct,
@@ -30,6 +34,9 @@ export const useProductSearch = (filters, productId) => {
     fetchProducts,
     fetchProductById,
     clearError,
-    clearSelectedProduct
+    clearSelectedProduct,
+
+    // Recargar productos con los mismos filtros
+    refetchProducts
   };
 };
