@@ -33,3 +33,15 @@ export async function loginUser({ email, password }) {
     };
   }
 }
+
+export async function getUserById(farmerId) {
+  try {
+    const response = await axios.get(`${BASE_URL}/auth/users/${farmerId}`);
+    return { success: true, farmer: response.data };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || "Error al obtener datos del agricultor",
+    };
+  }
+}
