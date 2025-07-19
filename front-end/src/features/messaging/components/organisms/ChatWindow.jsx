@@ -117,6 +117,7 @@ export default function ChatWindow({
             <div
               key={mensaje.id}
               className={`flex ${mensaje.enviado ? "justify-end" : "justify-start"}`}
+              data-testid="chat-message"
             >
               <div
                 className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
