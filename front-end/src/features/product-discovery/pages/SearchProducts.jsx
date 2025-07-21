@@ -105,7 +105,7 @@ export default function SearchProductsPage() {
             </div>
             <div className="flex gap-3">
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-48" data-testid="sort-select-trigger">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

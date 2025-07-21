@@ -25,7 +25,7 @@ export default function ProductFilters({ filters, onFilterChange, typeOptions })
                 value={filters[key]}
                 onValueChange={value => onFilterChange(key, value)}
               >
-                <SelectTrigger>
+                <SelectTrigger {...(key === "type" ? { 'data-testid': "type-select-trigger" } : {})}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -54,6 +54,7 @@ export default function ProductFilters({ filters, onFilterChange, typeOptions })
                 min={config.min}
                 step={config.step}
                 className="w-full"
+                data-testid="price-slider"
               />
             </div>
           );
@@ -69,6 +70,10 @@ export default function ProductFilters({ filters, onFilterChange, typeOptions })
                 value={filters[key]}
                 onChange={e => onFilterChange(key, e.target.value)}
                 placeholder={config.placeholder || ""}
+                data-testid={
+                  key === 'quantity' ? 'quantity-input' :
+                  key === 'harvest_date' ? 'date-input' : undefined
+                }
               />
             </div>
           );
