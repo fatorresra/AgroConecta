@@ -36,7 +36,7 @@ export default function ProductCard({ product }) {
           className="w-full h-48 object-cover"
         /> */}
         {product.type && (
-          <Badge className="absolute top-2 right-2 bg-green-600">
+          <Badge className="badge absolute top-2 right-2 bg-green-600" data-testid="product-type-badge">
             {(
               productTypes.find(pt => pt.value === product.type)?.label
               || product.type
@@ -52,7 +52,9 @@ export default function ProductCard({ product }) {
           {product.location || product.ubicacion} */}
           <Calendar className="h-4 w-4" />
           {product.harvest_date && (
-            "Cosecha: " + new Date(product.harvest_date).toLocaleDateString('es-CO')
+            <span data-testid="product-harvest-date">
+              {new Date(product.harvest_date).toLocaleDateString('es-CO')}
+            </span>
           )}
         </CardDescription>
       </CardHeader>
@@ -60,14 +62,18 @@ export default function ProductCard({ product }) {
         <div className="flex items-center justify-between mb-2">
           <span className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-green-600">
-              ${(product.price || product.price_per_unit).toLocaleString()}
+          <span className="text-2xl font-bold text-green-600" data-testid="product-price">
+            ${(product.price || product.price_per_unit).toLocaleString()}
+          </span>
             </span>
             <span className="text-xs text-gray-500">COP</span>
           </span>
           <span className="text-gray-500">/{product.unit || "unidad"}</span>
         </div>
         <span className="block text-xs text-gray-500 mb-2">
-          Cantidad en stock: {product.quantity}
+          <span className="block text-xs text-gray-500 mb-2" data-testid="product-quantity">
+            Cantidad en stock: {product.quantity}
+          </span>
         </span>
         <div className="flex items-center justify-between">
           {/* Could use farm_id to fetch owner name */}

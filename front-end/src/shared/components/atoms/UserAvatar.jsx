@@ -19,7 +19,7 @@ export default function UserAvatar({
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} data-testid="user-avatar">
       <Avatar className={sizeClasses[size]}>
         {user?.avatar && (
           <AvatarImage src={user?.avatar} />
