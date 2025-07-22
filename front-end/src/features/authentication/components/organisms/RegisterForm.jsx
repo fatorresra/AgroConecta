@@ -11,6 +11,7 @@ import RoleSelector from "../molecules/RoleSelector"
 import LocationFields from "../molecules/LocationFields"
 import FarmerProfileFields from "../molecules/FarmerProfileFields"
 import ProductInterestSelector from "../molecules/ProductInterestSelector"
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function RegisterForm() {
   const { register: registerHook } = useAuth()
@@ -25,9 +26,10 @@ export default function RegisterForm() {
 
   const role = watch("role") || ""
 
-  // Register field manually since RoleSelector is a custom component
+  // Manual field registrations
   useEffect(() => {
     register("role", { required: "Selecciona un rol" })
+    register("recaptcha", { required: "Completa el captcha" })
   }, [register])
 
   const onSubmit = async (data) => {
@@ -159,6 +161,18 @@ export default function RegisterForm() {
           {errors.api.message}
         </p>
       )}
+
+      <div className="flex justify-center">
+        <ReCAPTCHA
+          sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+          onChange={token => setValue("recaptcha", token, { shouldValidate: true })}
+        />
+        {errors.recaptcha && (
+          <p className="mt-2 text-sm text-red-500">
+            {errors.recaptcha.message}
+          </p>
+        )}
+      </div>
 
       <div className="space-y-4">
         <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" size="lg"

@@ -16,9 +16,9 @@ export async function registerUser(formData) {
   }
 }
 
-export async function loginUser({ email, password }) {
+export async function loginUser({ email, password, recaptcha }) {
   try {
-    const response = await axios.post(`${BASE_URL}/auth/login`, { email, password });
+    const response = await axios.post(`${BASE_URL}/auth/login`, { email, password, recaptcha });
     // if (!response.data.token) {
     //   throw new Error('No se recibió el token de autenticación');
     // }

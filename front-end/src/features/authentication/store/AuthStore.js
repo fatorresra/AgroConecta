@@ -7,10 +7,8 @@ export const useAuthStore = create(
       token: null,
       user: null,
       login: async (credentials) => {
-        const { email, password } = credentials;
-        
         try {
-          const response = await loginUser({ email, password });
+          const response = await loginUser(credentials);
           
           if (!response.success) {
             throw new Error(response.message);

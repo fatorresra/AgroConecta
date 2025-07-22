@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form"
 import AuthInput from "../atoms/AuthInput"
 import SocialLoginButtons from "../molecules/SocialLoginButtons"
 import { useAuth } from "../../hooks/useAuth"
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,15 +17,17 @@ export default function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm()
 
-  const onSubmit = async (data) => {
-    const result = await login({
-      email: data.email,
-      password: data.password,
-    })
+  // Registro manual
+  useState(() => {
+    register("recaptcha", { required: "Completa el captcha" })
+  }, [register])
 
+  const onSubmit = async (data) => {
+    const result = await login(data)
     if (!result.success) {
       // El error ya está manejado en useAuth
       return;
@@ -50,7 +53,8 @@ export default function LoginForm() {
     </button>
   )
 
-  return (    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {error && (
         <div className="p-3 rounded-md bg-red-50 text-red-500 text-sm">
           {error}
@@ -101,9 +105,22 @@ export default function LoginForm() {
         </Link>
       </div>
 
-      <Button 
-        type="submit" 
-        className="w-full bg-green-600 hover:bg-green-700" 
+      <div className="flex justify-center">
+        <ReCAPTCHA
+          sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+          onChange={token => setValue("recaptcha", token, { shouldValidate: true })}
+        />
+      </div>
+
+      {errors.recaptcha && (
+        <p className="mt-2 text-sm text-red-500">
+          {errors.recaptcha.message}
+        </p>
+      )}
+
+      <Button
+        type="submit"
+        className="w-full bg-green-600 hover:bg-green-700"
         size="lg"
         disabled={isSubmitting}
       >
