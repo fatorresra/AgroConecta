@@ -12,12 +12,13 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const { login, error, isLoading, clearError } = useAuth()
+  const { login } = useAuth()
 
   const {
     register,
     handleSubmit,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm()
 
@@ -27,10 +28,24 @@ export default function LoginForm() {
   }, [register])
 
   const onSubmit = async (data) => {
-    const result = await login(data)
+    const result = await login(data);
     if (!result.success) {
-      // El error ya está manejado en useAuth
-      return;
+      if (result.error === 'User does not exist with this email.') {
+        setError('email', {
+          type: 'manual',
+          message: 'No existe un usuario con este correo electrónico',
+        }, { shouldFocus: true });
+      } else if (result.error === 'Invalid password.') {
+        setError('password', {
+          type: 'manual',
+          message: 'Contraseña incorrecta',
+        }, { shouldFocus: true });
+      } else {
+        setError('api', {
+          type: 'manual',
+          message: result.error || 'Error al iniciar sesión',
+        });
+      }
     }
   }
 
@@ -55,11 +70,6 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {error && (
-        <div className="p-3 rounded-md bg-red-50 text-red-500 text-sm">
-          {error}
-        </div>
-      )}
       
       <AuthInput
         {...register("email", {

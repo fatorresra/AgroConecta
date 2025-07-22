@@ -11,13 +11,14 @@ export const useAuthStore = create(
           const response = await loginUser(credentials);
           
           if (!response.success) {
-            throw new Error(response.message);
+            // Retornar el error del backend para que useAuth lo procese
+            return { success: false, error: response.error };
           }
 
           const { res } = response;
 
           if (!res.token || !res.user || !res.user.role) {
-            throw new Error('Respuesta del servidor incompleta');
+            return { success: false, error: 'Respuesta del servidor incompleta' };
           }
 
           // Establecer el estado y esperar a que se complete
@@ -35,7 +36,7 @@ export const useAuthStore = create(
         } catch (error) {
           console.error('Error en login:', error);
           set({ token: null, user: null });
-          throw error;
+          return { success: false, error: error.message || 'Error al iniciar sesión' };
         }
       },
 

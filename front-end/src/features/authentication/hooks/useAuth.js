@@ -14,29 +14,36 @@ export const useAuth = () => {
       setError(null);
 
       // Esperar a que el login se complete y obtener el usuario
-      const { success, user: loggedUser } = await storeLogin(credentials);
-       
-      if (success && loggedUser) {
-        console.log('Login successful, user:', loggedUser);
-        
-        // Usar el usuario devuelto por el login en lugar del estado
-        const route = loggedUser.role === 'agricultor' 
-          ? '/farmer/products' 
-          : loggedUser.role === 'comprador' 
-            ? '/products' 
-            : '/home';
+      let loginResult;
+      try {
+        loginResult = await storeLogin(credentials);
+      } catch (err) {
+        // Si storeLogin lanza un error, puede ser por credenciales o por error de red
+        const errorMsg = err?.message || 'Error al iniciar sesión';
+        setError(errorMsg);
+        return { success: false, error: errorMsg };
+      }
 
-        console.log('Redirecting to:', route);
+      const { success, user: loggedUser } = loginResult;
+
+      if (success && loggedUser) {
+        const route = loggedUser.role === 'agricultor'
+          ? '/farmer/products'
+          : loggedUser.role === 'comprador'
+            ? '/products'
+            : '/home';
         navigate(route);
         return { success: true };
       }
-      
-      setError('Credenciales inválidas');
-      return { success: false, error: 'Credenciales inválidas' };
+
+      // Si no fue exitoso, intentar obtener el mensaje de error específico
+      const errorMsg = loginResult?.error || 'Credenciales inválidas';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } catch (error) {
-      console.error('Login error:', error);
-      setError(error.message || 'Error al iniciar sesión');
-      return { success: false, error: error.message };
+      const msg = error?.message || 'Error al iniciar sesión';
+      setError(msg);
+      return { success: false, error: msg };
     } finally {
       setIsLoading(false);
     }
