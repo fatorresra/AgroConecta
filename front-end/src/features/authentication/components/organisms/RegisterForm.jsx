@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/useAuth'
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { Link } from "react-router-dom"
 import { User, Mail, Lock, Phone } from "lucide-react"
@@ -15,7 +15,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 export default function RegisterForm() {
   const { register: registerHook } = useAuth()
-  const { 
+  const {
     register,
     handleSubmit,
     watch,
@@ -23,6 +23,7 @@ export default function RegisterForm() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm()
+  const recaptchaRef = useRef()
 
   const role = watch("role") || ""
 
@@ -35,20 +36,29 @@ export default function RegisterForm() {
   const onSubmit = async (data) => {
     // Remove password_confirm from form data
     const { password_confirm: _password_confirm, ...formData } = data;
-    
+
     const result = await registerHook(formData);
     if (!result.success) {
-      // Specific email error handling
       if (result.error === 'User already exists with this email.') {
         setError('email', {
           type: 'manual',
           message: 'Este correo electrónico ya está en uso',
         }, { shouldFocus: true });
+      } else if (
+        result.error?.toLowerCase().includes('captcha') ||
+        result.error?.toLowerCase().includes('recaptcha')
+      ) {
+        setError('recaptcha', {
+          type: 'manual',
+          message: result.error,
+        });
+        if (recaptchaRef.current) recaptchaRef.current.reset();
       } else {
         setError('api', {
           type: 'manual',
           message: result.error,
         });
+        if (recaptchaRef.current) recaptchaRef.current.reset();
       }
     }
   }
@@ -164,6 +174,7 @@ export default function RegisterForm() {
 
       <div className="flex justify-center">
         <ReCAPTCHA
+          ref={recaptchaRef}
           sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
           onChange={token => setValue("recaptcha", token, { shouldValidate: true })}
         />

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Link } from "react-router-dom"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const { login } = useAuth()
+  const recaptchaRef = useRef()
 
   const {
     register,
@@ -40,11 +41,21 @@ export default function LoginForm() {
           type: 'manual',
           message: 'Contraseña incorrecta',
         }, { shouldFocus: true });
+      } else if (
+        result.error?.toLowerCase().includes('captcha') ||
+        result.error?.toLowerCase().includes('recaptcha')
+      ) {
+        setError('recaptcha', {
+          type: 'manual',
+          message: result.error,
+        });
+        if (recaptchaRef.current) recaptchaRef.current.reset();
       } else {
         setError('api', {
           type: 'manual',
           message: result.error || 'Error al iniciar sesión',
         });
+        if (recaptchaRef.current) recaptchaRef.current.reset();
       }
     }
   }
@@ -117,6 +128,7 @@ export default function LoginForm() {
 
       <div className="flex justify-center">
         <ReCAPTCHA
+          ref={recaptchaRef}
           sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
           onChange={token => setValue("recaptcha", token, { shouldValidate: true })}
         />
