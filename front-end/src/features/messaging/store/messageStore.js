@@ -207,7 +207,7 @@ export const useMessageStore = create((set, get) => ({
         id: chat.id,
         chatId: chat.id,
         usuario: {
-          nombre: getOtherParticipant(chat.participants, user.id)?.user_id || 'Usuario',
+          nombre: getOtherParticipant(chat.participants, user.id)?.user_name || 'Usuario',
           rol: getOtherParticipant(chat.participants, user.id)?.role || 'comprador',
           avatar: '/placeholder.svg?height=40&width=40',
           online: true,

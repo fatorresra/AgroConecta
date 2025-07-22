@@ -8,21 +8,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useProductChat } from "@/features/messaging/hooks/useProductChat"
 import { useProductSearch } from "../hooks/useProductSearch"
 import { productTypes } from "@/shared/utils/options/productTypes"
+import { useFarmer } from "@/features/authentication/hooks/useFarmer";
 
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { selectedProduct: product, isLoading, error } = useProductSearch(undefined, id) // not passing filters
   const { loading: chatLoading, startChatWithProduct } = useProductChat();
+  const { farmer, isLoading: farmerLoading } = useFarmer(product?.farm_id);
 
   const handleChatClick = async () => {
     if (product) {
       await startChatWithProduct(product);
     }
   };
-
+  // console.log('Product:', product);
+  // // console.log('Product keys:', Object.keys(product));
+  // console.log('FarmerId:', product?.farm_id);
+  // console.log('Farmer:', farmer);
   // Estado de carga
-  if (isLoading) {
+  if (isLoading || farmerLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -60,7 +65,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const fallbackImageUrl = "https://img.freepik.com/foto-gratis/vacas-pastando-alrededor-granja_23-2150454914.jpg?semt=ais_hybrid&w=740";
+  // const fallbackImageUrl = "https://img.freepik.com/foto-gratis/vacas-pastando-alrededor-granja_23-2150454914.jpg?semt=ais_hybrid&w=740";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,7 +142,7 @@ export default function ProductDetailPage() {
                   <User className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Agricultor/a</p>
-                    <p className="font-medium">{""}</p>
+                    <p className="font-medium">{farmer?.name || "Desconocido"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -156,16 +161,6 @@ export default function ProductDetailPage() {
               <h2 className="text-xl font-semibold mb-2">Descripción</h2>
               <p className="text-gray-600">{product.description}</p>
             </div>
-
-            {/* Separate field, not being used */}
-            {/* <div>
-              <h2 className="text-xl font-semibold mb-2">Características</h2>
-              <ul className="list-disc list-inside space-y-1 text-gray-600">
-                {caracteristicas.map((caracteristica, index) => (
-                  <li key={index}>{caracteristica}</li>
-                ))}
-              </ul>
-            </div> */}
 
             <div className="pt-6 flex gap-4">
               <Button size="lg" className="flex-1 bg-green-600 hover:bg-green-700">

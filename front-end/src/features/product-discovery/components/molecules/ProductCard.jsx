@@ -45,7 +45,7 @@ export default function ProductCard({ product }) {
         )}
       </div>
       <CardHeader>
-        <CardTitle className="text-lg">{product.name || product.nombre}</CardTitle>
+        <CardTitle className="text-lg" data-testid="product-name">{product.name || product.nombre}</CardTitle>
         <CardDescription className="flex items-center gap-1">
           {/* Product department/city is not saved yet */}
           {/* <MapPin className="h-4 w-4" />
@@ -97,6 +97,7 @@ export default function ProductCard({ product }) {
             onClick={handleChatClick}
             disabled={loading}
             className="flex items-center gap-1"
+            data-testid="chat-button"
           >
             <MessageCircle className="h-4 w-4" />
             {loading ? 'Iniciando...' : 'Chat'}
