@@ -1,0 +1,43 @@
+tags:
+  - Authentication
+summary: Validate JWT token
+description: Validates the JWT token sent in the Authorization header.
+operationId: validateToken
+parameters:
+  - in: header
+    name: Authorization
+    required: true
+    description: Bearer token in the format `Bearer <JWT>`
+    schema:
+      type: string
+      example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+responses:
+  200:
+    description: Token is valid
+    schema:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          example: true
+        user_id:
+          type: string
+          format: uuid
+          example: "968f46b3-3505-43ca-a896-b535976e0ea2"
+  401:
+    description: Invalid or missing token
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid or missing token"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "User not found"
+      

@@ -1,0 +1,50 @@
+tags:
+  - Users
+summary: Get user by ID
+description: Retrieves a user's public information based on their unique ID.
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: string
+    description: The ID of the user to retrieve
+responses:
+  200:
+    description: User found
+    schema:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "64ddc9288f7a123456789abc"
+        email:
+          type: string
+          example: user@example.com
+        name:
+          type: string
+          example: Juan Pérez
+        role:
+          type: string
+          example: user
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-08-01T12:00:00Z"
+  404:
+    description: User not found
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: User not found
+  500:
+    description: Internal server error
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Internal error retrieving user

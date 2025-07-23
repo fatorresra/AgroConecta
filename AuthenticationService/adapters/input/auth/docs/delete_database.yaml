@@ -1,0 +1,30 @@
+tags:
+  - Testing
+summary: Delete the user database (test only)
+description: Deletes the entire user database. This endpoint is only available when the APP_ENV is set to `"test"`.
+operationId: deleteUserDatabase
+responses:
+  200:
+    description: Database was successfully deleted
+    schema:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Database deleted successfully"
+  403:
+    description: Operation not permitted outside of test environment
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "This endpoint is only available in test environment"
+  500:
+    description: Server error while deleting the database
+    schema:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unexpected error occurred"
