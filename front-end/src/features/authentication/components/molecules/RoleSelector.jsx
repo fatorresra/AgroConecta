@@ -1,7 +1,7 @@
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
-export default function RoleSelector({ value, onChange }) {
+export default function RoleSelector({ value, onChange, error }) {
   return (
     <div className="space-y-3">
       <Label className="text-base font-medium">¿Cuál es tu rol?</Label>
@@ -21,6 +21,9 @@ export default function RoleSelector({ value, onChange }) {
           </Label>
         </div>
       </RadioGroup>
+      {error && (
+        <p className="mt-1 text-sm text-red-500">{error}</p>
+      )}
     </div>
   )
 }

@@ -5,12 +5,29 @@ import { ThemeProvider } from './shared/context/theme-provider'
 import App from './App.jsx'
 import LoginPage from './features/authentication/pages/LoginPage.jsx'
 import RegisterPage from './features/authentication/pages/RegisterPage.jsx'
+import LandingPage from './features/home/pages/LandingPage.jsx'
+import SearchProductsPage from './features/product-discovery/pages/SearchProducts.jsx'
+import ProductDetailPage from './features/product-discovery/pages/ProductDetailPage.jsx'
+import FarmerProductsPage from './features/product-management/pages/FarmerProducts.jsx'
+import MessagesPage from './features/messaging/pages/MessagesPage.jsx'
 import '@/styles/globals.css'
 
 const router = createBrowserRouter([
   {
     path: '/',
+    element: <LandingPage />,
+  },
+  {
+    path: '/home',
     element: <App />,
+  },
+  {
+    path: '/products',
+    element: <SearchProductsPage />,
+  },
+  {
+    path: '/products/:id',
+    element: <ProductDetailPage />,
   },
   {
     path: '/login',
@@ -19,7 +36,15 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
-  }
+  },
+  {
+    path: '/farmer/products',
+    element: <FarmerProductsPage />,
+  },
+  {
+    path: '/messages',
+    element: <MessagesPage />,
+  },
 ])
 
 createRoot(document.getElementById('root')).render(
