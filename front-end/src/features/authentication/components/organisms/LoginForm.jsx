@@ -126,19 +126,18 @@ export default function LoginForm() {
         </Link>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center flex-col items-center">
         <ReCAPTCHA
           ref={recaptchaRef}
           sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
           onChange={token => setValue("recaptcha", token, { shouldValidate: true })}
         />
+        {errors.recaptcha && (
+          <p className="mt-2 text-sm text-red-500">
+            {errors.recaptcha.message}
+          </p>
+        )}
       </div>
-
-      {errors.recaptcha && (
-        <p className="mt-2 text-sm text-red-500">
-          {errors.recaptcha.message}
-        </p>
-      )}
 
       <Button
         type="submit"

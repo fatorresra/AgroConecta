@@ -172,7 +172,7 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <div className="flex justify-center">
+      <div className="flex justify-center flex-col items-center">
         <ReCAPTCHA
           ref={recaptchaRef}
           sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
